@@ -147,6 +147,16 @@ export default function SignInScreen() {
                 </Text>
               </TouchableOpacity>
             </View>
+
+            {/* DEV: Skip Sign In Button */}
+            <TouchableOpacity
+              onPress={() => router.push('/(auth)/sign-up')}
+              className="mt-6 py-3 border border-dashed border-text-muted rounded-lg"
+            >
+              <Text className="text-text-muted text-center text-sm">
+                [DEV] Skip Sign In →
+              </Text>
+            </TouchableOpacity>
           </View>
         </View>
       </ScrollView>
