@@ -6,37 +6,125 @@ import {
   TouchableOpacity,
   KeyboardAvoidingView,
   Platform,
+  Alert,
 } from 'react-native';
 import { useRouter } from 'expo-router';
+import * as Linking from 'expo-linking';
+import * as WebBrowser from 'expo-web-browser';
 import { Ionicons } from '@expo/vector-icons';
 import { Logo } from '@/components/domain/Logo';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
+import { supabase } from '@/lib/supabase';
+
+WebBrowser.maybeCompleteAuthSession();
 
 export default function SignInScreen() {
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [oauthLoading, setOauthLoading] = useState(false);
 
   const handleSignIn = async () => {
+    if (!email.trim() || !password) {
+      return;
+    }
+
     setLoading(true);
-    // TODO: Implement actual sign in with Appwrite
-    setTimeout(() => {
-      setLoading(false);
-      // Navigate to main app after sign in
-      // router.replace('/(tabs)/home');
-    }, 1500);
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email: email.trim(),
+      password,
+    });
+    setLoading(false);
+
+    if (error) {
+      Alert.alert('Sign in failed', error.message);
+      return;
+    }
+
+    if (
+      data.user?.id &&
+      (data.user.user_metadata?.first_name ||
+        data.user.user_metadata?.last_name)
+    ) {
+      const { error: profileError } = await supabase.from('profiles').upsert({
+        id: data.user.id,
+        email: data.user.email ?? email.trim(),
+        first_name: data.user.user_metadata?.first_name ?? null,
+        last_name: data.user.user_metadata?.last_name ?? null,
+      });
+
+      if (profileError) {
+        Alert.alert('Profile update failed', profileError.message);
+      }
+    }
+
+    router.replace('/(app)');
+  };
+
+  const handleForgotPassword = async () => {
+    if (!email.trim()) {
+      Alert.alert('Email required', 'Enter your email to reset your password.');
+      return;
+    }
+
+    const { error } = await supabase.auth.resetPasswordForEmail(email.trim());
+    if (error) {
+      Alert.alert('Reset failed', error.message);
+      return;
+    }
+
+    Alert.alert('Check your email', 'We sent a password reset link.');
+  };
+
+  const handleOAuthSignIn = async (provider: 'google' | 'apple') => {
+    if (oauthLoading) {
+      return;
+    }
+
+    setOauthLoading(true);
+    try {
+      const redirectTo = Linking.createURL('auth-callback');
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider,
+        options: {
+          redirectTo,
+          skipBrowserRedirect: true,
+        },
+      });
+
+      if (error) {
+        Alert.alert('Sign in failed', error.message);
+        return;
+      }
+
+      if (!data?.url) {
+        Alert.alert('Sign in failed', 'Missing OAuth redirect URL.');
+        return;
+      }
+
+      const result = await WebBrowser.openAuthSessionAsync(data.url, redirectTo);
+      if (result.type === 'success' && result.url) {
+        const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(result.url);
+        if (exchangeError) {
+          Alert.alert('Sign in failed', exchangeError.message);
+          return;
+        }
+
+        router.replace('/(app)');
+      }
+    } finally {
+      setOauthLoading(false);
+    }
   };
 
   const handleGoogleSignIn = () => {
-    // TODO: Implement Google OAuth
-    console.log('Google sign in');
+    handleOAuthSignIn('google');
   };
 
   const handleAppleSignIn = () => {
-    // TODO: Implement Apple OAuth
-    console.log('Apple sign in');
+    handleOAuthSignIn('apple');
   };
 
   return (
@@ -95,10 +183,8 @@ export default function SignInScreen() {
             </View>
 
             {/* Forgot Password */}
-            <TouchableOpacity className="self-end mb-6">
-              <Text className="text-text-secondary text-sm">
-                Forgot password?
-              </Text>
+            <TouchableOpacity className="self-end mb-6" onPress={handleForgotPassword}>
+              <Text className="text-text-secondary text-sm">Forgot password?</Text>
             </TouchableOpacity>
 
             {/* Sign In Button */}
@@ -106,7 +192,7 @@ export default function SignInScreen() {
               title="Sign In"
               onPress={handleSignIn}
               loading={loading}
-              disabled={!email || !password}
+              disabled={!email.trim() || !password}
             />
 
             {/* Or Divider */}
@@ -122,41 +208,27 @@ export default function SignInScreen() {
                 title="Sign in with Google"
                 onPress={handleGoogleSignIn}
                 variant="social"
-                icon={
-                  <Text style={{ fontSize: 18, fontWeight: '600' }}>G</Text>
-                }
+                disabled={oauthLoading}
+                icon={<Text style={{ fontSize: 18, fontWeight: '600' }}>G</Text>}
               />
               <Button
                 title="Sign in with Apple"
                 onPress={handleAppleSignIn}
                 variant="social"
-                icon={
-                  <Ionicons name="logo-apple" size={20} color="#3D3D3D" />
-                }
+                disabled={oauthLoading}
+                icon={<Ionicons name="logo-apple" size={20} color="#3D3D3D" />}
               />
             </View>
 
             {/* Sign Up Link */}
             <View className="flex-row justify-center mt-8">
-              <Text className="text-text-secondary text-sm">
-                Don't have an account?{' '}
-              </Text>
-              <TouchableOpacity onPress={() => router.push('/(auth)/sign-up')}>
-                <Text className="text-secondary font-medium text-sm">
-                  Sign Up
-                </Text>
+              <Text className="text-text-secondary text-sm">Don't have an account? </Text>
+              <TouchableOpacity
+                onPress={() => router.push('/(auth)/sign-up-profile')}
+              >
+                <Text className="text-secondary font-medium text-sm">Sign Up</Text>
               </TouchableOpacity>
             </View>
-
-            {/* DEV: Skip Sign In Button */}
-            <TouchableOpacity
-              onPress={() => router.push('/(auth)/sign-up')}
-              className="mt-6 py-3 border border-dashed border-text-muted rounded-lg"
-            >
-              <Text className="text-text-muted text-center text-sm">
-                [DEV] Skip Sign In →
-              </Text>
-            </TouchableOpacity>
           </View>
         </View>
       </ScrollView>

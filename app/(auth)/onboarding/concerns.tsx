@@ -34,7 +34,7 @@ export default function ConcernsScreen() {
   };
 
   return (
-    <OnboardingContainer currentStep={2} totalSteps={7}>
+    <OnboardingContainer currentStep={4} totalSteps={11}>
       <View style={styles.container}>
         {/* Title */}
         <View style={styles.titleContainer}>

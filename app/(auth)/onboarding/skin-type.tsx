@@ -23,7 +23,7 @@ export default function SkinTypeScreen() {
   };
 
   return (
-    <OnboardingContainer currentStep={3} totalSteps={7}>
+    <OnboardingContainer currentStep={5} totalSteps={11}>
       <View style={styles.container}>
         {/* Title */}
         <View style={styles.titleContainer}>

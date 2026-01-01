@@ -61,7 +61,7 @@ export default function PaywallScreen() {
               <Ionicons name="arrow-back" size={24} color="#3D3D3D" />
             </TouchableOpacity>
 
-            <ProgressDots total={8} current={8} />
+            <ProgressDots total={11} current={11} />
 
             <TouchableOpacity onPress={handleSkip} style={styles.skipButton}>
               <Text style={styles.skipText}>Skip</Text>

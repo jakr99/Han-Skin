@@ -41,7 +41,7 @@ export default function ProductsScreen() {
   const showProductTypes = routineLevel === 'full' || routineLevel === 'basics';
 
   return (
-    <OnboardingContainer currentStep={4} totalSteps={7}>
+    <OnboardingContainer currentStep={6} totalSteps={11}>
       <View style={styles.container}>
         {/* Title */}
         <View style={styles.titleContainer}>

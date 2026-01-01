@@ -37,11 +37,11 @@ export default function PreferencesScreen() {
 
   const handleContinue = () => {
     // TODO: Store preferences in context/state
-    router.push('/(auth)/onboarding/paywall');
+    router.push('/(auth)/sign-up');
   };
 
   return (
-    <OnboardingContainer currentStep={7} totalSteps={7}>
+    <OnboardingContainer currentStep={9} totalSteps={11}>
       <View style={styles.container}>
         {/* Title */}
         <View style={styles.titleContainer}>

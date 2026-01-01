@@ -38,7 +38,7 @@ export default function GoalsScreen() {
   };
 
   return (
-    <OnboardingContainer currentStep={1} totalSteps={7}>
+    <OnboardingContainer currentStep={3} totalSteps={11}>
       <View style={styles.container}>
         {/* Title */}
         <View style={styles.titleContainer}>

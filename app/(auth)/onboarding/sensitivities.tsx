@@ -32,7 +32,7 @@ export default function SensitivitiesScreen() {
   };
 
   return (
-    <OnboardingContainer currentStep={6} totalSteps={7}>
+    <OnboardingContainer currentStep={8} totalSteps={11}>
       <View style={styles.container}>
         {/* Title */}
         <View style={styles.titleContainer}>

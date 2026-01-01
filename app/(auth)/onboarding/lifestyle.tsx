@@ -81,7 +81,7 @@ export default function LifestyleScreen() {
   };
 
   return (
-    <OnboardingContainer currentStep={5} totalSteps={7}>
+    <OnboardingContainer currentStep={7} totalSteps={11}>
       <View style={styles.container}>
         {/* Title */}
         <View style={styles.titleContainer}>
