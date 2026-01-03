@@ -28,7 +28,7 @@ export default function PreferencesScreen() {
   });
   const [texture, setTexture] = useState('serum');
   const [budgetFriendly, setBudgetFriendly] = useState(false);
-  const [budgetLevel, setBudgetLevel] = useState(1); // 0: Low, 1: No preference, 2: High
+  const [budgetLevel, setBudgetLevel] = useState(50); // 0-100 scale
   const [otherNotes, setOtherNotes] = useState('');
 
   const updateValue = (id: string, value: boolean) => {

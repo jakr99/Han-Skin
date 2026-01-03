@@ -6,13 +6,12 @@ import { CheckboxRow } from '@/components/ui/CheckboxRow';
 import { Button } from '@/components/ui/Button';
 
 const CONCERNS = [
-  { id: 'acne_breakouts', label: 'Acne / breakouts' },
-  { id: 'dark_spots', label: 'Dark spots' },
-  { id: 'redness', label: 'Redness' },
-  { id: 'texture', label: 'Texture' },
-  { id: 'pores', label: 'Pores' },
-  { id: 'uneven_tone', label: 'Uneven tone' },
-  { id: 'fine_lines', label: 'Fine lines' },
+  { id: 'redness_flushing', label: 'Redness & flushing' },
+  { id: 'dark_spots', label: 'Dark spots & hyperpigmentation' },
+  { id: 'uneven_texture', label: 'Uneven texture' },
+  { id: 'visible_pores', label: 'Visible pores' },
+  { id: 'dehydration', label: 'Dehydration' },
+  { id: 'puffiness', label: 'Puffiness & inflammation' },
 ];
 
 export default function ConcernsScreen() {
@@ -39,9 +38,9 @@ export default function ConcernsScreen() {
         {/* Title */}
         <View style={styles.titleContainer}>
           <Text style={styles.title}>
-            Any specific concerns{'\n'}you'd like to target?
+            Primary skin concerns
           </Text>
-          <Text style={styles.subtitle}>Select all that apply:</Text>
+          <Text style={styles.subtitle}>Select all that apply</Text>
         </View>
 
         {/* Concerns List */}
@@ -88,13 +87,14 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 26,
     fontWeight: '600',
-    color: '#3D3D3D',
+    color: '#1F2937',
     textAlign: 'center',
     lineHeight: 34,
+    letterSpacing: -0.3,
   },
   subtitle: {
     fontSize: 15,
-    color: '#7A7A7A',
+    color: '#6B7280',
     marginTop: 12,
   },
   scrollView: {
@@ -106,11 +106,11 @@ const styles = StyleSheet.create({
   bottomSection: {
     alignItems: 'center',
     paddingTop: 16,
-    paddingBottom: 32,
+    paddingBottom: 40,
   },
   helperText: {
     fontSize: 13,
-    color: '#A0A0A0',
+    color: '#9CA3AF',
     marginTop: 16,
   },
 });

@@ -4,6 +4,7 @@ import {
   Text,
   KeyboardAvoidingView,
   Platform,
+  StyleSheet,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Logo } from '@/components/domain/Logo';
@@ -20,7 +21,6 @@ export default function SignUpProfileScreen() {
     if (!firstName.trim() || !lastName.trim()) {
       return;
     }
-
     router.push('/(auth)/birthday');
   };
 
@@ -28,17 +28,18 @@ export default function SignUpProfileScreen() {
     <OnboardingContainer currentStep={1} totalSteps={11}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        className="flex-1"
+        style={styles.container}
       >
-        <View className="flex-1 justify-between">
-          <View className="items-center pt-8">
+        <View style={styles.content}>
+          <View style={styles.topSection}>
             <Logo size="md" />
 
-            <Text className="text-2xl font-semibold text-text-primary text-center mt-8">
-              What's your full name?
+            <Text style={styles.title}>What's your name?</Text>
+            <Text style={styles.subtitle}>
+              We'll use this to personalize your experience
             </Text>
 
-            <View className="w-full mt-8 gap-4">
+            <View style={styles.inputsContainer}>
               <Input
                 placeholder="First name"
                 value={firstName}
@@ -52,21 +53,53 @@ export default function SignUpProfileScreen() {
                 autoCapitalize="words"
               />
             </View>
-
-            <View className="w-full mt-6">
-              <Button
-                title="Continue"
-                onPress={handleContinue}
-                disabled={!firstName.trim() || !lastName.trim()}
-              />
-            </View>
           </View>
 
-          <View className="items-center pb-8">
-            <Logo size="sm" />
+          <View style={styles.buttonContainer}>
+            <Button
+              title="Continue"
+              onPress={handleContinue}
+              disabled={!firstName.trim() || !lastName.trim()}
+            />
           </View>
         </View>
       </KeyboardAvoidingView>
     </OnboardingContainer>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  content: {
+    flex: 1,
+    justifyContent: 'space-between',
+  },
+  topSection: {
+    alignItems: 'center',
+    paddingTop: 32,
+  },
+  title: {
+    fontSize: 26,
+    fontWeight: '600',
+    color: '#1F2937',
+    textAlign: 'center',
+    marginTop: 32,
+    letterSpacing: -0.3,
+  },
+  subtitle: {
+    fontSize: 15,
+    color: '#6B7280',
+    textAlign: 'center',
+    marginTop: 8,
+  },
+  inputsContainer: {
+    width: '100%',
+    marginTop: 32,
+    gap: 16,
+  },
+  buttonContainer: {
+    paddingBottom: 40,
+  },
+});

@@ -2,16 +2,17 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
 import { OnboardingContainer } from '@/components/layout/OnboardingContainer';
-import { GoalPill } from '@/components/ui/GoalPill';
+import { GoalCard } from '@/components/ui/GoalCard';
 import { Button } from '@/components/ui/Button';
 
+// Ordered by most common goals - more saturated tints
 const GOALS = [
-  { id: 'glow_hydration', label: 'Glow & hydration', icon: '✨', tint: '#F0F7F7' },
-  { id: 'clear_breakouts', label: 'Clear breakouts', icon: '🧴', tint: '#FDF5F3' },
-  { id: 'even_tone', label: 'Even skin tone', icon: '🌙', tint: '#F5F3F8' },
-  { id: 'fine_lines', label: 'Fine lines & aging', icon: '⏳', tint: '#F5F5F5' },
-  { id: 'sun_protection', label: 'Sun protection', icon: '☀️', tint: '#FFFBF5' },
-  { id: 'calm_sensitive', label: 'Calm sensitive skin', icon: '❤️', tint: '#FDF5F5' },
+  { id: 'acne', label: 'Acne', icon: '💧', tint: '#E3F2F2' },
+  { id: 'even_tone', label: 'Even tone', icon: '🌙', tint: '#EDE8F5' },
+  { id: 'glow_hydration', label: 'Glow + hydration', icon: '✨', tint: '#FFF5E0' },
+  { id: 'healthy_aging', label: 'Healthy aging', icon: '🌿', tint: '#E8F5E8' },
+  { id: 'sun_protection', label: 'Sun protection', icon: '☀️', tint: '#FFF8E6' },
+  { id: 'skin_barrier', label: 'Skin barrier', icon: '🛡️', tint: '#E8EEF5' },
 ];
 
 const MAX_SELECTIONS = 2;
@@ -33,34 +34,55 @@ export default function GoalsScreen() {
   };
 
   const handleContinue = () => {
-    // TODO: Store goals in context/state
     router.push('/(auth)/onboarding/concerns');
   };
 
   return (
     <OnboardingContainer currentStep={3} totalSteps={11}>
       <View style={styles.container}>
-        {/* Title */}
-        <View style={styles.titleContainer}>
+        {/* Header */}
+        <View style={styles.header}>
           <Text style={styles.title}>
             What are you hoping{'\n'}to improve most?
           </Text>
-          <Text style={styles.subtitle}>Pick up to 2 goals:</Text>
+
+          {/* Counter chip */}
+          <View style={styles.counterRow}>
+            <Text style={styles.counterLabel}>Choose up to 2</Text>
+            <View style={styles.counterChip}>
+              <Text style={styles.counterText}>
+                {selectedGoals.length} / {MAX_SELECTIONS}
+              </Text>
+            </View>
+          </View>
         </View>
 
-        {/* Goals Grid */}
+        {/* Goals Grid - 2 columns x 3 rows */}
         <View style={styles.goalsGrid}>
-          {GOALS.map((goal) => (
-            <View key={goal.id} style={styles.goalItem}>
-              <GoalPill
-                label={goal.label}
-                icon={goal.icon}
-                selected={selectedGoals.includes(goal.id)}
-                onPress={() => toggleGoal(goal.id)}
-                tintColor={goal.tint}
-              />
+          <View style={styles.row}>
+            <View style={styles.goalItem}>
+              <GoalCard label={GOALS[0].label} icon={GOALS[0].icon} tintColor={GOALS[0].tint} selected={selectedGoals.includes(GOALS[0].id)} onPress={() => toggleGoal(GOALS[0].id)} />
             </View>
-          ))}
+            <View style={styles.goalItem}>
+              <GoalCard label={GOALS[1].label} icon={GOALS[1].icon} tintColor={GOALS[1].tint} selected={selectedGoals.includes(GOALS[1].id)} onPress={() => toggleGoal(GOALS[1].id)} />
+            </View>
+          </View>
+          <View style={styles.row}>
+            <View style={styles.goalItem}>
+              <GoalCard label={GOALS[2].label} icon={GOALS[2].icon} tintColor={GOALS[2].tint} selected={selectedGoals.includes(GOALS[2].id)} onPress={() => toggleGoal(GOALS[2].id)} />
+            </View>
+            <View style={styles.goalItem}>
+              <GoalCard label={GOALS[3].label} icon={GOALS[3].icon} tintColor={GOALS[3].tint} selected={selectedGoals.includes(GOALS[3].id)} onPress={() => toggleGoal(GOALS[3].id)} />
+            </View>
+          </View>
+          <View style={styles.row}>
+            <View style={styles.goalItem}>
+              <GoalCard label={GOALS[4].label} icon={GOALS[4].icon} tintColor={GOALS[4].tint} selected={selectedGoals.includes(GOALS[4].id)} onPress={() => toggleGoal(GOALS[4].id)} />
+            </View>
+            <View style={styles.goalItem}>
+              <GoalCard label={GOALS[5].label} icon={GOALS[5].icon} tintColor={GOALS[5].tint} selected={selectedGoals.includes(GOALS[5].id)} onPress={() => toggleGoal(GOALS[5].id)} />
+            </View>
+          </View>
         </View>
 
         {/* Bottom Section */}
@@ -68,7 +90,7 @@ export default function GoalsScreen() {
           <Button
             title="Continue"
             onPress={handleContinue}
-            disabled={selectedGoals.length === 0}
+            disabled={selectedGoals.length < MAX_SELECTIONS}
           />
           <Text style={styles.helperText}>
             You can change this anytime.
@@ -84,40 +106,58 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'space-between',
   },
-  titleContainer: {
+  header: {
     alignItems: 'center',
-    marginTop: 24,
+    marginTop: 16,
   },
   title: {
     fontSize: 26,
     fontWeight: '600',
-    color: '#3D3D3D',
+    color: '#1F2937',
     textAlign: 'center',
     lineHeight: 34,
+    letterSpacing: -0.3,
   },
-  subtitle: {
+  counterRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 16,
+    gap: 10,
+  },
+  counterLabel: {
     fontSize: 15,
-    color: '#7A7A7A',
-    marginTop: 12,
+    color: '#6B7280',
+    fontWeight: '500',
+  },
+  counterChip: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    backgroundColor: 'rgba(122, 158, 159, 0.12)',
+    borderRadius: 14,
+  },
+  counterText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#7A9E9F',
   },
   goalsGrid: {
+    marginTop: 28,
+    gap: 16,
+  },
+  row: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'center',
-    gap: 12,
-    marginTop: 32,
-    paddingHorizontal: 8,
+    gap: 14,
   },
   goalItem: {
-    width: '47%',
+    flex: 1,
   },
   bottomSection: {
     alignItems: 'center',
-    paddingBottom: 32,
+    paddingBottom: 40,
   },
   helperText: {
     fontSize: 13,
-    color: '#A0A0A0',
+    color: '#6B7280',
     marginTop: 16,
   },
 });
