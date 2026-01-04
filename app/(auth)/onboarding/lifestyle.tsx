@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
 import { OnboardingContainer } from '@/components/layout/OnboardingContainer';
 import { SegmentedControl } from '@/components/ui/SegmentedControl';
 import { Button } from '@/components/ui/Button';
+import { useOnboarding } from '@/context/OnboardingContext';
 
 const LIFESTYLE_QUESTIONS = [
   {
@@ -63,20 +64,13 @@ const LIFESTYLE_QUESTIONS = [
 
 export default function LifestyleScreen() {
   const router = useRouter();
-  const [answers, setAnswers] = useState<Record<string, string>>(() => {
-    const defaults: Record<string, string> = {};
-    LIFESTYLE_QUESTIONS.forEach((q) => {
-      defaults[q.id] = q.default;
-    });
-    return defaults;
-  });
+  const { lifestyle, setLifestyle } = useOnboarding();
 
   const updateAnswer = (questionId: string, value: string) => {
-    setAnswers((prev) => ({ ...prev, [questionId]: value }));
+    setLifestyle((prev) => ({ ...prev, [questionId]: value }));
   };
 
   const handleContinue = () => {
-    // TODO: Store lifestyle in context/state
     router.push('/(auth)/onboarding/sensitivities');
   };
 
@@ -102,7 +96,7 @@ export default function LifestyleScreen() {
               key={question.id}
               label={question.label}
               options={question.options}
-              selectedId={answers[question.id]}
+              selectedId={lifestyle[question.id] ?? question.default}
               onSelect={(value) => updateAnswer(question.id, value)}
             />
           ))}

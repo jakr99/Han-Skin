@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
 import { OnboardingContainer } from '@/components/layout/OnboardingContainer';
 import { RadioRow } from '@/components/ui/RadioRow';
 import { CheckboxPill } from '@/components/ui/CheckboxPill';
 import { Button } from '@/components/ui/Button';
+import { useOnboarding } from '@/context/OnboardingContext';
 
 const ROUTINE_OPTIONS = [
   { id: 'full', icon: '🧴', label: 'Yes, a full routine' },
@@ -21,11 +22,11 @@ const PRODUCT_TYPES = [
 
 export default function ProductsScreen() {
   const router = useRouter();
-  const [routineLevel, setRoutineLevel] = useState<string | null>(null);
-  const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
+  const { routineLevel, setRoutineLevel, productTypes, setProductTypes } =
+    useOnboarding();
 
   const toggleProduct = (productId: string) => {
-    setSelectedProducts((prev) => {
+    setProductTypes((prev) => {
       if (prev.includes(productId)) {
         return prev.filter((id) => id !== productId);
       }
@@ -33,8 +34,14 @@ export default function ProductsScreen() {
     });
   };
 
+  const handleRoutineSelect = (value: string) => {
+    setRoutineLevel(value);
+    if (value === 'not_yet') {
+      setProductTypes([]);
+    }
+  };
+
   const handleContinue = () => {
-    // TODO: Store products in context/state
     router.push('/(auth)/onboarding/lifestyle');
   };
 
@@ -62,7 +69,7 @@ export default function ProductsScreen() {
               icon={option.icon || undefined}
               label={option.label}
               selected={routineLevel === option.id}
-              onPress={() => setRoutineLevel(option.id)}
+              onPress={() => handleRoutineSelect(option.id)}
             />
           ))}
 
@@ -75,7 +82,7 @@ export default function ProductsScreen() {
                   <View key={product.id} style={styles.productItem}>
                     <CheckboxPill
                       label={product.label}
-                      selected={selectedProducts.includes(product.id)}
+                      selected={productTypes.includes(product.id)}
                       onPress={() => toggleProduct(product.id)}
                     />
                   </View>

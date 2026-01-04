@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
 import { OnboardingContainer } from '@/components/layout/OnboardingContainer';
 import { RadioCard } from '@/components/ui/RadioCard';
 import { Button } from '@/components/ui/Button';
+import { useOnboarding } from '@/context/OnboardingContext';
 
 const SKIN_TYPES = [
   { id: 'dry', icon: '💧', title: 'Dry', description: 'Feels tight or flaky' },
@@ -15,10 +16,9 @@ const SKIN_TYPES = [
 
 export default function SkinTypeScreen() {
   const router = useRouter();
-  const [selectedType, setSelectedType] = useState<string | null>(null);
+  const { skinType, setSkinType } = useOnboarding();
 
   const handleContinue = () => {
-    // TODO: Store skin type in context/state
     router.push('/(auth)/onboarding/products');
   };
 
@@ -44,8 +44,8 @@ export default function SkinTypeScreen() {
               icon={type.icon}
               title={type.title}
               description={type.description}
-              selected={selectedType === type.id}
-              onPress={() => setSelectedType(type.id)}
+              selected={skinType === type.id}
+              onPress={() => setSkinType(type.id)}
             />
           ))}
         </ScrollView>
@@ -55,7 +55,7 @@ export default function SkinTypeScreen() {
           <Button
             title="Continue"
             onPress={handleContinue}
-            disabled={!selectedType}
+            disabled={!skinType}
           />
           <Text style={styles.helperText}>
             You can change this anytime.

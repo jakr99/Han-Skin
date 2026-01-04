@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
 import { OnboardingContainer } from '@/components/layout/OnboardingContainer';
 import { CheckboxRow } from '@/components/ui/CheckboxRow';
 import { Button } from '@/components/ui/Button';
+import { useOnboarding } from '@/context/OnboardingContext';
 
 const CONCERNS = [
   { id: 'acne_breakouts', label: 'Acne / breakouts' },
@@ -17,10 +18,10 @@ const CONCERNS = [
 
 export default function ConcernsScreen() {
   const router = useRouter();
-  const [selectedConcerns, setSelectedConcerns] = useState<string[]>([]);
+  const { concerns, setConcerns } = useOnboarding();
 
   const toggleConcern = (concernId: string) => {
-    setSelectedConcerns((prev) => {
+    setConcerns((prev) => {
       if (prev.includes(concernId)) {
         return prev.filter((id) => id !== concernId);
       }
@@ -29,7 +30,6 @@ export default function ConcernsScreen() {
   };
 
   const handleContinue = () => {
-    // TODO: Store concerns in context/state
     router.push('/(auth)/onboarding/skin-type');
   };
 
@@ -54,7 +54,7 @@ export default function ConcernsScreen() {
             <CheckboxRow
               key={concern.id}
               label={concern.label}
-              selected={selectedConcerns.includes(concern.id)}
+              selected={concerns.includes(concern.id)}
               onPress={() => toggleConcern(concern.id)}
             />
           ))}
@@ -65,7 +65,7 @@ export default function ConcernsScreen() {
           <Button
             title="Continue"
             onPress={handleContinue}
-            disabled={selectedConcerns.length === 0}
+            disabled={concerns.length === 0}
           />
           <Text style={styles.helperText}>
             You can change this anytime.

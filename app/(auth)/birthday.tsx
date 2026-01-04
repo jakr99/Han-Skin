@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
   View,
   Text,
@@ -12,33 +12,42 @@ import { Ionicons } from '@expo/vector-icons';
 import { Logo } from '@/components/domain/Logo';
 import { Button } from '@/components/ui/Button';
 import { OnboardingContainer } from '@/components/layout/OnboardingContainer';
+import { useOnboarding } from '@/context/OnboardingContext';
 
 export default function BirthdayScreen() {
   const router = useRouter();
-  const [month, setMonth] = useState('');
-  const [day, setDay] = useState('');
-  const [year, setYear] = useState('');
+  const {
+    birthdayMonth,
+    birthdayDay,
+    birthdayYear,
+    setBirthdayMonth,
+    setBirthdayDay,
+    setBirthdayYear,
+  } = useOnboarding();
 
   const handleContinue = () => {
     // TODO: Store birthday in context/state
     router.push('/(auth)/onboarding/goals');
   };
 
-  const isValid = month.length === 2 && day.length === 2 && year.length === 4;
+  const isValid =
+    birthdayMonth.length === 2 &&
+    birthdayDay.length === 2 &&
+    birthdayYear.length === 4;
 
   const handleMonthChange = (text: string) => {
     const cleaned = text.replace(/[^0-9]/g, '').slice(0, 2);
-    setMonth(cleaned);
+    setBirthdayMonth(cleaned);
   };
 
   const handleDayChange = (text: string) => {
     const cleaned = text.replace(/[^0-9]/g, '').slice(0, 2);
-    setDay(cleaned);
+    setBirthdayDay(cleaned);
   };
 
   const handleYearChange = (text: string) => {
     const cleaned = text.replace(/[^0-9]/g, '').slice(0, 4);
-    setYear(cleaned);
+    setBirthdayYear(cleaned);
   };
 
   return (
@@ -61,7 +70,7 @@ export default function BirthdayScreen() {
                   style={styles.dateInput}
                   placeholder="MM"
                   placeholderTextColor="#A0A0A0"
-                  value={month}
+                  value={birthdayMonth}
                   onChangeText={handleMonthChange}
                   keyboardType="number-pad"
                   maxLength={2}
@@ -71,7 +80,7 @@ export default function BirthdayScreen() {
                   style={styles.dateInput}
                   placeholder="DD"
                   placeholderTextColor="#A0A0A0"
-                  value={day}
+                  value={birthdayDay}
                   onChangeText={handleDayChange}
                   keyboardType="number-pad"
                   maxLength={2}
@@ -81,7 +90,7 @@ export default function BirthdayScreen() {
                   style={[styles.dateInput, styles.yearInput]}
                   placeholder="YYYY"
                   placeholderTextColor="#A0A0A0"
-                  value={year}
+                  value={birthdayYear}
                   onChangeText={handleYearChange}
                   keyboardType="number-pad"
                   maxLength={4}

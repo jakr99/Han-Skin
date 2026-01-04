@@ -8,6 +8,7 @@ import {
   Alert,
 } from 'react-native';
 import { useRouter } from 'expo-router';
+import * as Linking from 'expo-linking';
 import { Logo } from '@/components/domain/Logo';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -17,10 +18,31 @@ import { supabase } from '@/lib/supabase';
 
 export default function SignUpScreen() {
   const router = useRouter();
-  const { firstName, lastName, reset } = useOnboarding();
+  const {
+    firstName,
+    lastName,
+    birthdayMonth,
+    birthdayDay,
+    birthdayYear,
+    goals,
+    concerns,
+    skinType,
+    routineLevel,
+    productTypes,
+    lifestyle,
+    sensitivities,
+    sensitivitiesOther,
+    values,
+    texture,
+    budgetFriendly,
+    budgetLevel,
+    otherNotes,
+    reset,
+  } = useOnboarding();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const redirectUrl = Linking.createURL('auth-callback');
 
   const handleContinue = async () => {
     const trimmedEmail = email.trim();
@@ -30,6 +52,30 @@ export default function SignUpScreen() {
 
     const trimmedFirstName = firstName.trim();
     const trimmedLastName = lastName.trim();
+    const redirectTo = redirectUrl;
+    const birthdayIso =
+      birthdayYear.length === 4 &&
+      birthdayMonth.length === 2 &&
+      birthdayDay.length === 2
+        ? `${birthdayYear}-${birthdayMonth}-${birthdayDay}`
+        : null;
+    const onboardingPayload = {
+      goals,
+      concerns,
+      skinType,
+      routineLevel,
+      productTypes,
+      lifestyle,
+      sensitivities,
+      sensitivitiesOther: sensitivitiesOther.trim() || null,
+      preferences: {
+        values,
+        texture,
+        budgetFriendly,
+        budgetLevel,
+        otherNotes: otherNotes.trim() || null,
+      },
+    };
 
     setLoading(true);
     const { data, error } = await supabase.auth.signUp({
@@ -39,7 +85,10 @@ export default function SignUpScreen() {
         data: {
           first_name: trimmedFirstName || undefined,
           last_name: trimmedLastName || undefined,
+          birthday: birthdayIso ?? undefined,
+          onboarding: onboardingPayload,
         },
+        emailRedirectTo: redirectTo,
       },
     });
     setLoading(false);
@@ -62,6 +111,8 @@ export default function SignUpScreen() {
       email: data.session.user.email ?? trimmedEmail,
       first_name: trimmedFirstName || null,
       last_name: trimmedLastName || null,
+      birthday: birthdayIso,
+      onboarding: onboardingPayload,
     };
     const { error: profileError } = await supabase
       .from('profiles')
@@ -113,6 +164,9 @@ export default function SignUpScreen() {
                 loading={loading}
                 disabled={!email.trim() || !password}
               />
+              <Text className="text-[11px] text-text-muted mt-3 text-center">
+                Redirect URL: {redirectUrl}
+              </Text>
             </View>
 
             <View className="flex-row justify-center mt-6">

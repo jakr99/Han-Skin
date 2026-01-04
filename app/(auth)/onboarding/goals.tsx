@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
 import { OnboardingContainer } from '@/components/layout/OnboardingContainer';
 import { GoalPill } from '@/components/ui/GoalPill';
 import { Button } from '@/components/ui/Button';
+import { useOnboarding } from '@/context/OnboardingContext';
 
 const GOALS = [
   { id: 'glow_hydration', label: 'Glow & hydration', icon: '✨', tint: '#F0F7F7' },
@@ -18,10 +19,10 @@ const MAX_SELECTIONS = 2;
 
 export default function GoalsScreen() {
   const router = useRouter();
-  const [selectedGoals, setSelectedGoals] = useState<string[]>([]);
+  const { goals, setGoals } = useOnboarding();
 
   const toggleGoal = (goalId: string) => {
-    setSelectedGoals((prev) => {
+    setGoals((prev) => {
       if (prev.includes(goalId)) {
         return prev.filter((id) => id !== goalId);
       }
@@ -33,7 +34,6 @@ export default function GoalsScreen() {
   };
 
   const handleContinue = () => {
-    // TODO: Store goals in context/state
     router.push('/(auth)/onboarding/concerns');
   };
 
@@ -55,7 +55,7 @@ export default function GoalsScreen() {
               <GoalPill
                 label={goal.label}
                 icon={goal.icon}
-                selected={selectedGoals.includes(goal.id)}
+                selected={goals.includes(goal.id)}
                 onPress={() => toggleGoal(goal.id)}
                 tintColor={goal.tint}
               />
@@ -68,7 +68,7 @@ export default function GoalsScreen() {
           <Button
             title="Continue"
             onPress={handleContinue}
-            disabled={selectedGoals.length === 0}
+            disabled={goals.length === 0}
           />
           <Text style={styles.helperText}>
             You can change this anytime.

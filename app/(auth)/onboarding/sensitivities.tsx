@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { View, Text, StyleSheet, ScrollView, TextInput } from 'react-native';
 import { useRouter } from 'expo-router';
 import { OnboardingContainer } from '@/components/layout/OnboardingContainer';
 import { ToggleRow } from '@/components/ui/ToggleRow';
 import { Button } from '@/components/ui/Button';
+import { useOnboarding } from '@/context/OnboardingContext';
 
 const SENSITIVITIES = [
   { id: 'fragrance', icon: '🧴', title: 'Fragrance', description: 'React or have sensitivity?' },
@@ -14,20 +15,18 @@ const SENSITIVITIES = [
 
 export default function SensitivitiesScreen() {
   const router = useRouter();
-  const [toggles, setToggles] = useState<Record<string, boolean>>({
-    fragrance: false,
-    acids: false,
-    retinol: false,
-    essential_oils: false,
-  });
-  const [otherSensitivities, setOtherSensitivities] = useState('');
+  const {
+    sensitivities,
+    setSensitivities,
+    sensitivitiesOther,
+    setSensitivitiesOther,
+  } = useOnboarding();
 
   const updateToggle = (id: string, value: boolean) => {
-    setToggles((prev) => ({ ...prev, [id]: value }));
+    setSensitivities((prev) => ({ ...prev, [id]: value }));
   };
 
   const handleContinue = () => {
-    // TODO: Store sensitivities in context/state
     router.push('/(auth)/onboarding/preferences');
   };
 
@@ -54,7 +53,7 @@ export default function SensitivitiesScreen() {
               icon={item.icon}
               title={item.title}
               description={item.description}
-              value={toggles[item.id]}
+              value={sensitivities[item.id]}
               onValueChange={(value) => updateToggle(item.id, value)}
             />
           ))}
@@ -66,8 +65,8 @@ export default function SensitivitiesScreen() {
               style={styles.otherInput}
               placeholder="Please specify other sensitivities..."
               placeholderTextColor="#A0A0A0"
-              value={otherSensitivities}
-              onChangeText={setOtherSensitivities}
+              value={sensitivitiesOther}
+              onChangeText={setSensitivitiesOther}
               multiline
             />
           </View>

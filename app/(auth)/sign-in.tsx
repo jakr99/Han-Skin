@@ -25,6 +25,7 @@ export default function SignInScreen() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [oauthLoading, setOauthLoading] = useState(false);
+  const redirectUrl = Linking.createURL('auth-callback');
 
   const handleSignIn = async () => {
     if (!email.trim() || !password) {
@@ -43,16 +44,21 @@ export default function SignInScreen() {
       return;
     }
 
-    if (
-      data.user?.id &&
-      (data.user.user_metadata?.first_name ||
-        data.user.user_metadata?.last_name)
-    ) {
+    const metadata = data.user?.user_metadata ?? {};
+    const hasProfileData =
+      metadata.first_name ||
+      metadata.last_name ||
+      metadata.birthday ||
+      metadata.onboarding;
+
+    if (data.user?.id && hasProfileData) {
       const { error: profileError } = await supabase.from('profiles').upsert({
         id: data.user.id,
         email: data.user.email ?? email.trim(),
-        first_name: data.user.user_metadata?.first_name ?? null,
-        last_name: data.user.user_metadata?.last_name ?? null,
+        first_name: metadata.first_name ?? null,
+        last_name: metadata.last_name ?? null,
+        birthday: metadata.birthday ?? null,
+        onboarding: metadata.onboarding ?? null,
       });
 
       if (profileError) {
@@ -85,7 +91,7 @@ export default function SignInScreen() {
 
     setOauthLoading(true);
     try {
-      const redirectTo = Linking.createURL('auth-callback');
+      const redirectTo = redirectUrl;
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider,
         options: {
@@ -106,7 +112,16 @@ export default function SignInScreen() {
 
       const result = await WebBrowser.openAuthSessionAsync(data.url, redirectTo);
       if (result.type === 'success' && result.url) {
-        const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(result.url);
+        const { queryParams } = Linking.parse(result.url);
+        const code = queryParams?.code;
+        const authCode = typeof code === 'string' ? code : null;
+
+        if (!authCode) {
+          Alert.alert('Sign in failed', 'Missing OAuth confirmation code.');
+          return;
+        }
+
+        const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(authCode);
         if (exchangeError) {
           Alert.alert('Sign in failed', exchangeError.message);
           return;
@@ -194,6 +209,9 @@ export default function SignInScreen() {
               loading={loading}
               disabled={!email.trim() || !password}
             />
+            <Text className="text-[11px] text-text-muted mt-3 text-center">
+              Redirect URL: {redirectUrl}
+            </Text>
 
             {/* Or Divider */}
             <View className="flex-row items-center my-6">
