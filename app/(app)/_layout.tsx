@@ -81,6 +81,24 @@ export default function AppLayout() {
           href: null,
         }}
       />
+      <Tabs.Screen
+        name="profile-screens"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="scan-result"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="manual-ingredients"
+        options={{
+          href: null,
+        }}
+      />
     </Tabs>
   );
 }
