@@ -5,10 +5,12 @@ import {
   ScrollView,
   TouchableOpacity,
   StyleSheet,
+  Alert,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { supabase } from '@/lib/supabase';
 
 // Warm Minimal Color Palette
 const COLORS = {
@@ -122,8 +124,21 @@ export default function ProfileScreen() {
         router.push('/profile-screens/account');
         break;
       case 'signout':
-        // Handle sign out - would use AuthContext
-        console.log('Sign out pressed');
+        Alert.alert(
+          'Sign Out',
+          'Are you sure you want to sign out?',
+          [
+            { text: 'Cancel', style: 'cancel' },
+            {
+              text: 'Sign Out',
+              style: 'destructive',
+              onPress: async () => {
+                await supabase.auth.signOut();
+                router.replace('/(auth)/sign-in');
+              },
+            },
+          ]
+        );
         break;
       // Subscription items
       case 'plan':

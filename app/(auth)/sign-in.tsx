@@ -126,7 +126,7 @@ export default function SignInScreen() {
 
         {/* Email link */}
         <TouchableOpacity
-          onPress={() => router.push('/(auth)/sign-up')}
+          onPress={() => router.push('/(auth)/email-sign-in')}
           style={styles.emailLinkContainer}
           hitSlop={{ top: 8, bottom: 8, left: 16, right: 16 }}
         >
