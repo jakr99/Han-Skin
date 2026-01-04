@@ -2,102 +2,40 @@ import React, { useState } from 'react';
 import {
   View,
   Text,
-  ScrollView,
   TouchableOpacity,
-  KeyboardAvoidingView,
-  Platform,
   Alert,
+  Image,
+  Dimensions,
+  StyleSheet,
+  StatusBar,
 } from 'react-native';
 import { useRouter } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Linking from 'expo-linking';
 import * as WebBrowser from 'expo-web-browser';
 import { Ionicons } from '@expo/vector-icons';
-import { Logo } from '@/components/domain/Logo';
-import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
+import { LinearGradient } from 'expo-linear-gradient';
 import { supabase } from '@/lib/supabase';
 
 WebBrowser.maybeCompleteAuthSession();
 
+const { height: SCREEN_HEIGHT, width: SCREEN_WIDTH } = Dimensions.get('window');
+const isSmallDevice = SCREEN_HEIGHT < 700;
+
 export default function SignInScreen() {
   const router = useRouter();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
+  const insets = useSafeAreaInsets();
   const [oauthLoading, setOauthLoading] = useState(false);
-  const redirectUrl = Linking.createURL('auth-callback');
-
-  const handleSignIn = async () => {
-    if (!email.trim() || !password) {
-      return;
-    }
-
-    setLoading(true);
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email: email.trim(),
-      password,
-    });
-    setLoading(false);
-
-    if (error) {
-      Alert.alert('Sign in failed', error.message);
-      return;
-    }
-
-    const metadata = data.user?.user_metadata ?? {};
-    const hasProfileData =
-      metadata.first_name ||
-      metadata.last_name ||
-      metadata.birthday ||
-      metadata.onboarding;
-
-    if (data.user?.id && hasProfileData) {
-      const { error: profileError } = await supabase.from('profiles').upsert({
-        id: data.user.id,
-        email: data.user.email ?? email.trim(),
-        first_name: metadata.first_name ?? null,
-        last_name: metadata.last_name ?? null,
-        birthday: metadata.birthday ?? null,
-        onboarding: metadata.onboarding ?? null,
-      });
-
-      if (profileError) {
-        Alert.alert('Profile update failed', profileError.message);
-      }
-    }
-
-    router.replace('/(app)');
-  };
-
-  const handleForgotPassword = async () => {
-    if (!email.trim()) {
-      Alert.alert('Email required', 'Enter your email to reset your password.');
-      return;
-    }
-
-    const { error } = await supabase.auth.resetPasswordForEmail(email.trim());
-    if (error) {
-      Alert.alert('Reset failed', error.message);
-      return;
-    }
-
-    Alert.alert('Check your email', 'We sent a password reset link.');
-  };
 
   const handleOAuthSignIn = async (provider: 'google' | 'apple') => {
-    if (oauthLoading) {
-      return;
-    }
+    if (oauthLoading) return;
 
     setOauthLoading(true);
     try {
-      const redirectTo = redirectUrl;
+      const redirectTo = Linking.createURL('auth-callback');
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider,
-        options: {
-          redirectTo,
-          skipBrowserRedirect: true,
-        },
+        options: { redirectTo, skipBrowserRedirect: true },
       });
 
       if (error) {
@@ -112,21 +50,11 @@ export default function SignInScreen() {
 
       const result = await WebBrowser.openAuthSessionAsync(data.url, redirectTo);
       if (result.type === 'success' && result.url) {
-        const { queryParams } = Linking.parse(result.url);
-        const code = queryParams?.code;
-        const authCode = typeof code === 'string' ? code : null;
-
-        if (!authCode) {
-          Alert.alert('Sign in failed', 'Missing OAuth confirmation code.');
-          return;
-        }
-
-        const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(authCode);
+        const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(result.url);
         if (exchangeError) {
           Alert.alert('Sign in failed', exchangeError.message);
           return;
         }
-
         router.replace('/(app)');
       }
     } finally {
@@ -134,122 +62,242 @@ export default function SignInScreen() {
     }
   };
 
-  const handleGoogleSignIn = () => {
-    handleOAuthSignIn('google');
-  };
-
-  const handleAppleSignIn = () => {
-    handleOAuthSignIn('apple');
-  };
-
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      className="flex-1 bg-background"
-    >
-      <ScrollView
-        contentContainerStyle={{ flexGrow: 1 }}
-        showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps="handled"
-      >
-        <View className="flex-1 px-6 pt-12 pb-8">
-          {/* Logo */}
-          <View className="items-center mt-4">
-            <Logo size="md" />
-          </View>
+    <View style={styles.container}>
+      <StatusBar barStyle="dark-content" />
 
-          {/* Tagline */}
-          <View className="items-center mt-6">
-            <Text className="text-2xl font-semibold text-text-primary text-center">
-              Achieve Radiant, Glass Skin
-            </Text>
-            <Text className="text-sm text-text-secondary text-center mt-2 px-4">
-              Personalized Korean skincare routines{'\n'}tailored for your skin.
-            </Text>
-          </View>
+      {/* Hero Image */}
+      <View style={styles.heroContainer}>
+        <Image
+          source={require('../../assets/images/hero-model.png')}
+          style={styles.heroImage}
+          resizeMode="cover"
+        />
 
-          {/* Sign In Form */}
-          <View className="mt-8">
-            <Text className="text-xl font-semibold text-text-primary text-center mb-6">
-              Sign In
-            </Text>
+        {/* Gradient overlay */}
+        <LinearGradient
+          colors={[
+            'rgba(250, 250, 248, 0)',
+            'rgba(250, 250, 248, 0.35)',
+            'rgba(250, 250, 248, 0.95)',
+          ]}
+          locations={[0, 0.6, 1]}
+          style={StyleSheet.absoluteFillObject}
+        />
 
-            {/* Email Input */}
-            <View className="mb-4">
-              <Input
-                placeholder="Email"
-                value={email}
-                onChangeText={setEmail}
-                icon="mail-outline"
-                keyboardType="email-address"
-                autoCapitalize="none"
-              />
-            </View>
+      </View>
 
-            {/* Password Input */}
-            <View className="mb-2">
-              <Input
-                placeholder="Password"
-                value={password}
-                onChangeText={setPassword}
-                icon="lock-closed-outline"
-                secureTextEntry
-              />
-            </View>
+      {/* Content */}
+      <View style={[styles.content, { paddingBottom: insets.bottom + 8 }]}>
+        {/* Headline */}
+        <Text style={styles.headline}>
+          Clear skin, without{'\n'}the confusion.
+        </Text>
 
-            {/* Forgot Password */}
-            <TouchableOpacity className="self-end mb-6" onPress={handleForgotPassword}>
-              <Text className="text-text-secondary text-sm">Forgot password?</Text>
-            </TouchableOpacity>
+        {/* Subcopy */}
+        <Text style={styles.subcopy}>
+          Scan products and build a routine that fits your skin.
+        </Text>
 
-            {/* Sign In Button */}
-            <Button
-              title="Sign In"
-              onPress={handleSignIn}
-              loading={loading}
-              disabled={!email.trim() || !password}
-            />
-            <Text className="text-[11px] text-text-muted mt-3 text-center">
-              Redirect URL: {redirectUrl}
-            </Text>
+        {/* Buttons */}
+        <View style={styles.buttonContainer}>
+          {/* Apple Button */}
+          <TouchableOpacity
+            onPress={() => handleOAuthSignIn('apple')}
+            disabled={oauthLoading}
+            activeOpacity={0.9}
+            style={styles.appleButton}
+          >
+            <Ionicons name="logo-apple" size={20} color="#FFFFFF" />
+            <Text style={styles.appleButtonText}>Sign in with Apple</Text>
+          </TouchableOpacity>
 
-            {/* Or Divider */}
-            <View className="flex-row items-center my-6">
-              <View className="flex-1 h-px bg-border" />
-              <Text className="mx-4 text-text-muted text-sm">or</Text>
-              <View className="flex-1 h-px bg-border" />
-            </View>
-
-            {/* Social Sign In */}
-            <View className="gap-3">
-              <Button
-                title="Sign in with Google"
-                onPress={handleGoogleSignIn}
-                variant="social"
-                disabled={oauthLoading}
-                icon={<Text style={{ fontSize: 18, fontWeight: '600' }}>G</Text>}
-              />
-              <Button
-                title="Sign in with Apple"
-                onPress={handleAppleSignIn}
-                variant="social"
-                disabled={oauthLoading}
-                icon={<Ionicons name="logo-apple" size={20} color="#3D3D3D" />}
-              />
-            </View>
-
-            {/* Sign Up Link */}
-            <View className="flex-row justify-center mt-8">
-              <Text className="text-text-secondary text-sm">Don't have an account? </Text>
-              <TouchableOpacity
-                onPress={() => router.push('/(auth)/sign-up-profile')}
-              >
-                <Text className="text-secondary font-medium text-sm">Sign Up</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
+          {/* Google Button */}
+          <TouchableOpacity
+            onPress={() => handleOAuthSignIn('google')}
+            disabled={oauthLoading}
+            activeOpacity={0.9}
+            style={styles.googleButton}
+          >
+            <Text style={styles.googleIcon}>G</Text>
+            <Text style={styles.googleButtonText}>Continue with Google</Text>
+          </TouchableOpacity>
         </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
+
+        {/* Email link */}
+        <TouchableOpacity
+          onPress={() => router.push('/(auth)/sign-up')}
+          style={styles.emailLinkContainer}
+          hitSlop={{ top: 8, bottom: 8, left: 16, right: 16 }}
+        >
+          <Text style={styles.emailLink}>Sign in with email</Text>
+        </TouchableOpacity>
+
+        {/* Create account */}
+        <View style={styles.createAccountContainer}>
+          <Text style={styles.createAccountText}>New here? </Text>
+          <TouchableOpacity onPress={() => router.push('/(auth)/sign-up-profile')}>
+            <Text style={styles.createAccountLink}>Create account</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Legal */}
+        <Text style={styles.legal}>
+          By continuing, you agree to our Terms & Privacy Policy.
+        </Text>
+
+        {/* Dev Bypass - Remove in production */}
+        <TouchableOpacity
+          onPress={() => router.replace('/(app)')}
+          style={styles.devButton}
+        >
+          <Text style={styles.devButtonText}>Skip to Home (Dev)</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#FAFAF8',
+  },
+
+  // Hero
+  heroContainer: {
+    height: isSmallDevice ? SCREEN_HEIGHT * 0.38 : SCREEN_HEIGHT * 0.42,
+    width: '100%',
+    position: 'relative',
+    overflow: 'hidden',
+  },
+  heroImage: {
+    width: '100%',
+    height: SCREEN_HEIGHT * 0.55,
+    position: 'absolute',
+    top: 0,
+  },
+
+  // Content
+  content: {
+    flex: 1,
+    paddingHorizontal: 24,
+  },
+
+  // Typography
+  headline: {
+    fontSize: isSmallDevice ? 27 : 32,
+    fontWeight: '600',
+    color: '#1F2937',
+    textAlign: 'center',
+    letterSpacing: -0.6,
+    lineHeight: isSmallDevice ? 34 : 40,
+    marginTop: isSmallDevice ? 16 : 24,
+  },
+  subcopy: {
+    fontSize: isSmallDevice ? 15 : 16,
+    fontWeight: '400',
+    color: '#6B7280',
+    textAlign: 'center',
+    lineHeight: isSmallDevice ? 20 : 22,
+    marginTop: 12,
+    paddingHorizontal: 16,
+  },
+
+  // Buttons
+  buttonContainer: {
+    marginTop: isSmallDevice ? 18 : 24,
+    gap: isSmallDevice ? 10 : 12,
+  },
+  appleButton: {
+    height: isSmallDevice ? 52 : 56,
+    backgroundColor: '#111111',
+    borderRadius: 18,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.10,
+    shadowRadius: 20,
+    elevation: 4,
+  },
+  appleButtonText: {
+    color: '#FFFFFF',
+    fontSize: 17,
+    fontWeight: '600',
+  },
+  googleButton: {
+    height: isSmallDevice ? 52 : 56,
+    backgroundColor: 'rgba(255, 255, 255, 0.78)',
+    borderRadius: 18,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 10,
+    borderWidth: 1,
+    borderColor: 'rgba(17, 24, 39, 0.10)',
+  },
+  googleIcon: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#111827',
+  },
+  googleButtonText: {
+    color: '#111827',
+    fontSize: 17,
+    fontWeight: '500',
+  },
+
+  // Links
+  emailLinkContainer: {
+    alignItems: 'center',
+    marginTop: 16,
+  },
+  emailLink: {
+    fontSize: 15,
+    fontWeight: '500',
+    color: '#6B7280',
+  },
+  createAccountContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 14,
+  },
+  createAccountText: {
+    fontSize: 15,
+    fontWeight: '400',
+    color: 'rgba(17, 24, 39, 0.55)',
+  },
+  createAccountLink: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: 'rgba(17, 24, 39, 0.70)',
+  },
+
+  // Legal
+  legal: {
+    fontSize: isSmallDevice ? 11 : 12,
+    fontWeight: '700',
+    color: 'rgba(17, 24, 39, 0.45)',
+    textAlign: 'center',
+    marginTop: 14,
+  },
+
+  // Dev button
+  devButton: {
+    marginTop: 16,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    backgroundColor: '#FF6B6B',
+    borderRadius: 8,
+    alignSelf: 'center',
+  },
+  devButtonText: {
+    color: '#FFFFFF',
+    fontSize: 13,
+    fontWeight: '600',
+  },
+});

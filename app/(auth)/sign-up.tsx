@@ -179,9 +179,6 @@ export default function SignUpScreen() {
             </View>
           </View>
 
-          <View className="items-center pb-8">
-            <Logo size="sm" />
-          </View>
         </View>
       </KeyboardAvoidingView>
     </OnboardingContainer>

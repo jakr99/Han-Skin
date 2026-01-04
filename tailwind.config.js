@@ -22,9 +22,10 @@ module.exports = {
                 },
                 // Background
                 background: {
-                    DEFAULT: '#FBF9F7',
+                    DEFAULT: '#FAFAF8',
                     soft: '#FDF5F0',
                     mint: '#F0F5F5',
+                    premium: '#F3F4F6',
                 },
                 // Surface
                 surface: {

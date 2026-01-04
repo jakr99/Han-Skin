@@ -34,19 +34,28 @@ export function Button({
       <TouchableOpacity
         onPress={onPress}
         disabled={isDisabled}
-        activeOpacity={0.8}
-        style={[fullWidth && styles.fullWidth]}
+        activeOpacity={0.85}
+        style={[
+          fullWidth && styles.fullWidth,
+          !isDisabled && styles.activeButtonShadow,
+        ]}
       >
         <LinearGradient
-          colors={isDisabled ? ['#A8C5C6', '#A8C5C6'] : ['#A8C5C6', '#7A9E9F']}
+          colors={isDisabled ? ['#D1DEDE', '#C4D4D4'] : ['#6B9293', '#4A7A7B']}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
-          style={styles.primaryButton}
+          style={[
+            styles.primaryButton,
+            isDisabled && styles.primaryButtonDisabled,
+          ]}
         >
           {loading ? (
             <ActivityIndicator color="#FFFFFF" />
           ) : (
-            <Text style={styles.primaryText}>{title}</Text>
+            <Text style={[
+              styles.primaryText,
+              isDisabled && styles.primaryTextDisabled,
+            ]}>{title}</Text>
           )}
         </LinearGradient>
       </TouchableOpacity>
@@ -88,16 +97,30 @@ const styles = StyleSheet.create({
   fullWidth: {
     width: '100%',
   },
+  activeButtonShadow: {
+    shadowColor: '#4A7A7B',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
+  },
   primaryButton: {
     height: 52,
     borderRadius: 26,
     justifyContent: 'center',
     alignItems: 'center',
   },
+  primaryButtonDisabled: {
+    opacity: 0.6,
+  },
   primaryText: {
     color: '#FFFFFF',
     fontSize: 16,
     fontWeight: '600',
+    letterSpacing: 0.3,
+  },
+  primaryTextDisabled: {
+    opacity: 0.8,
   },
   outlineButton: {
     height: 52,

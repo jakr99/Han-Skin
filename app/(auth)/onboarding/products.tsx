@@ -120,9 +120,10 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 26,
     fontWeight: '600',
-    color: '#3D3D3D',
+    color: '#1F2937',
     textAlign: 'center',
     lineHeight: 34,
+    letterSpacing: -0.3,
   },
   scrollView: {
     flex: 1,
@@ -136,7 +137,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 15,
     fontWeight: '500',
-    color: '#7A7A7A',
+    color: '#6B7280',
     marginBottom: 16,
   },
   productGrid: {
@@ -150,11 +151,11 @@ const styles = StyleSheet.create({
   bottomSection: {
     alignItems: 'center',
     paddingTop: 16,
-    paddingBottom: 32,
+    paddingBottom: 40,
   },
   helperText: {
     fontSize: 13,
-    color: '#A0A0A0',
+    color: '#9CA3AF',
     marginTop: 16,
   },
 });
