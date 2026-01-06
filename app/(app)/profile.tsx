@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import {
   View,
   Text,
@@ -11,6 +11,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '@/lib/supabase';
+import { useAuth } from '@/context/AuthContext';
 
 // Warm Minimal Color Palette
 const COLORS = {
@@ -26,12 +27,7 @@ const COLORS = {
   border: '#E8E4DF',         // warm gray border
 };
 
-const SKIN_TAGS = [
-  { label: 'Combination', color: '#F3E8FF', textColor: '#9333EA' },
-  { label: 'Glow', color: '#FEF3E2', textColor: '#D4A574' },
-  { label: 'Even Tone', color: '#E8F5E9', textColor: '#4CAF50' },
-  { label: 'Sensitive', color: '#FFEBEE', textColor: '#E57373' },
-];
+// SKIN_TAGS is now generated dynamically based on user's onboarding data
 
 const PROGRESS_TAGS = [
   { label: 'Combination', active: true },
@@ -52,12 +48,7 @@ const LIBRARY_ITEMS = [
   { id: 'privacy', icon: 'lock-closed-outline', label: 'Privacy & data' },
 ];
 
-const ACCOUNT_ITEMS = [
-  { id: 'email', icon: 'mail-outline', label: 'Email', value: 'anna@email.com' },
-  { id: 'password', icon: 'key-outline', label: 'Change password' },
-  { id: 'connected', icon: 'link-outline', label: 'Connected accounts' },
-  { id: 'signout', icon: 'log-out-outline', label: 'Sign out', danger: true },
-];
+// ACCOUNT_ITEMS is now generated dynamically in the component
 
 const SUBSCRIPTION_ITEMS = [
   { id: 'plan', icon: 'diamond-outline', label: 'Current plan', value: 'Free' },
@@ -113,16 +104,73 @@ function MenuItem({ icon, label, value, danger, isLast, onPress }: MenuItemProps
 export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const { user } = useAuth();
 
-  const handleSignOut = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error) {
-      Alert.alert('Sign out failed', error.message);
-      return;
+  // Get user data from auth
+  const userData = useMemo(() => {
+    const metadata = user?.user_metadata || {};
+    const firstName = metadata.first_name || '';
+    const lastName = metadata.last_name || '';
+    const email = user?.email || '';
+    const onboarding = metadata.onboarding || {};
+
+    // Build full name
+    const fullName = [firstName, lastName].filter(Boolean).join(' ') || email.split('@')[0] || 'User';
+
+    // Get skin profile from onboarding data
+    const skinType = onboarding.skinType || 'Not set';
+    const concerns = onboarding.concerns || [];
+    const sensitivities = onboarding.sensitivities || [];
+    const goals = onboarding.goals || [];
+
+    return {
+      fullName,
+      firstName: firstName || email.split('@')[0] || 'User',
+      email,
+      skinType,
+      concerns,
+      sensitivities,
+      goals,
+    };
+  }, [user]);
+
+  // Dynamic skin tags based on user's onboarding data
+  const skinTags = useMemo(() => {
+    const tags: { label: string; color: string; textColor: string }[] = [];
+
+    // Add skin type
+    if (userData.skinType && userData.skinType !== 'Not set') {
+      tags.push({ label: userData.skinType, color: '#F3E8FF', textColor: '#9333EA' });
     }
 
-    router.replace('/(auth)/sign-in');
-  };
+    // Add concerns (limit to 3)
+    const concernColors = [
+      { color: '#FEF3E2', textColor: '#D4A574' },
+      { color: '#E8F5E9', textColor: '#4CAF50' },
+      { color: '#FFEBEE', textColor: '#E57373' },
+    ];
+    userData.concerns.slice(0, 3).forEach((concern: string, index: number) => {
+      tags.push({
+        label: concern,
+        ...concernColors[index % concernColors.length],
+      });
+    });
+
+    // Fallback if no tags
+    if (tags.length === 0) {
+      tags.push({ label: 'Complete your profile', color: '#F3F4F6', textColor: '#6B7280' });
+    }
+
+    return tags;
+  }, [userData]);
+
+  // Dynamic account items with user's email
+  const accountItems = useMemo(() => [
+    { id: 'email', icon: 'mail-outline', label: 'Email', value: userData.email || 'Not set' },
+    { id: 'password', icon: 'key-outline', label: 'Change password' },
+    { id: 'connected', icon: 'link-outline', label: 'Connected accounts' },
+    { id: 'signout', icon: 'log-out-outline', label: 'Sign out', danger: true },
+  ], [userData.email]);
 
   // Navigation handlers for menu items
   const handleMenuPress = (itemId: string) => {
@@ -134,7 +182,21 @@ export default function ProfileScreen() {
         router.push('/profile-screens/account');
         break;
       case 'signout':
-        handleSignOut();
+        Alert.alert(
+          'Sign Out',
+          'Are you sure you want to sign out?',
+          [
+            { text: 'Cancel', style: 'cancel' },
+            {
+              text: 'Sign Out',
+              style: 'destructive',
+              onPress: async () => {
+                await supabase.auth.signOut();
+                router.replace('/(auth)/sign-in');
+              },
+            },
+          ]
+        );
         break;
       // Subscription items
       case 'plan':
@@ -185,8 +247,8 @@ export default function ProfileScreen() {
               <Ionicons name="person" size={20} color={COLORS.accent} />
             </View>
             <View style={styles.profileDetails}>
-              <Text style={styles.userName}>Anna Lee</Text>
-              <Text style={styles.userSubtitle}>Updated today</Text>
+              <Text style={styles.userName}>{userData.fullName}</Text>
+              <Text style={styles.userSubtitle}>{userData.email}</Text>
             </View>
           </View>
         </View>
@@ -196,7 +258,7 @@ export default function ProfileScreen() {
           <View style={styles.overviewContent}>
             <Text style={styles.overviewTitle}>Your Skin Overview</Text>
             <View style={styles.tagsContainer}>
-              {SKIN_TAGS.map((tag, index) => (
+              {skinTags.map((tag, index) => (
                 <View
                   key={index}
                   style={[styles.skinTag, { backgroundColor: tag.color }]}
@@ -296,14 +358,14 @@ export default function ProfileScreen() {
         {/* Account & Security Section */}
         <Text style={styles.sectionHeader}>Account & Security</Text>
         <View style={styles.sectionContainer}>
-          {ACCOUNT_ITEMS.map((item, index) => (
+          {accountItems.map((item, index) => (
             <MenuItem
               key={item.id}
               icon={item.icon}
               label={item.label}
               value={item.value}
               danger={item.danger}
-              isLast={index === ACCOUNT_ITEMS.length - 1}
+              isLast={index === accountItems.length - 1}
               onPress={() => handleMenuPress(item.id)}
             />
           ))}

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -6,128 +6,55 @@ import {
   TouchableOpacity,
   Modal,
   TextInput,
-  ActivityIndicator,
   Alert,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import { CameraView, useCameraPermissions, BarcodeScanningResult } from 'expo-camera';
 import { fetchProductByBarcode } from '@/services/barcodeService';
-import type { BarcodeScanResponse } from '@/types/scanner';
 
-// -----------------------------------------------------------------------------
-// Types
-// -----------------------------------------------------------------------------
-type ScanState = 'idle' | 'scanning' | 'loading' | 'error';
-
-// -----------------------------------------------------------------------------
-// Component
-// -----------------------------------------------------------------------------
 export default function BarcodeScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
 
-  // Camera permissions
-  const [permission, requestPermission] = useCameraPermissions();
-
-  // State
-  const [scanState, setScanState] = useState<ScanState>('idle');
-  const [showScanner, setShowScanner] = useState(false);
   const [showManualInput, setShowManualInput] = useState(false);
   const [manualBarcode, setManualBarcode] = useState('');
-  const [scannedCode, setScannedCode] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
-  // Handle barcode scanned
-  const handleBarcodeScanned = async (result: BarcodeScanningResult) => {
-    if (scanState === 'loading') return; // Prevent multiple scans
-
-    const barcode = result.data;
-    setScannedCode(barcode);
-    setScanState('loading');
-    setShowScanner(false);
-
-    await processBarcode(barcode);
+  const handleScanPress = () => {
+    // Navigate to full-screen scanner
+    router.push('/(app)/scanner' as any);
   };
 
-  // Process barcode (from scan or manual entry)
-  const processBarcode = async (barcode: string) => {
-    try {
-      setScanState('loading');
-      const result: BarcodeScanResponse = await fetchProductByBarcode(barcode);
-
-      // Navigate to result screen with data
-      router.push({
-        pathname: '/(app)/scan-result',
-        params: {
-          barcode,
-          found: result.found ? 'true' : 'false',
-          product: result.product ? JSON.stringify(result.product) : '',
-          ingredientsText: result.ingredientsText || '',
-        },
-      } as any);
-
-      setScanState('idle');
-    } catch (error) {
-      console.error('Error processing barcode:', error);
-      setScanState('error');
-      Alert.alert(
-        'Error',
-        'Failed to look up product. Please try again.',
-        [{ text: 'OK', onPress: () => setScanState('idle') }]
-      );
-    }
-  };
-
-  // Handle manual barcode submission
-  const handleManualSubmit = () => {
+  const handleManualSubmit = async () => {
     const trimmed = manualBarcode.trim();
     if (trimmed.length < 8) {
       Alert.alert('Invalid Barcode', 'Please enter a valid barcode (at least 8 digits).');
       return;
     }
-    setShowManualInput(false);
-    setManualBarcode('');
-    processBarcode(trimmed);
-  };
 
-  // Start scanning
-  const startScanning = async () => {
-    if (!permission?.granted) {
-      const result = await requestPermission();
-      if (!result.granted) {
-        Alert.alert(
-          'Camera Permission Required',
-          'Please enable camera access in your device settings to scan barcodes.'
-        );
-        return;
-      }
+    setIsLoading(true);
+    try {
+      const result = await fetchProductByBarcode(trimmed);
+      setShowManualInput(false);
+      setManualBarcode('');
+
+      router.push({
+        pathname: '/(app)/scan-result',
+        params: {
+          barcode: trimmed,
+          found: result.found ? 'true' : 'false',
+          product: result.product ? JSON.stringify(result.product) : '',
+          ingredientsText: result.ingredientsText || '',
+        },
+      } as any);
+    } catch (error) {
+      Alert.alert('Error', 'Failed to look up product. Please try again.');
+    } finally {
+      setIsLoading(false);
     }
-    setScanState('scanning');
-    setShowScanner(true);
   };
-
-  // Loading overlay
-  if (scanState === 'loading') {
-    return (
-      <View style={styles.container}>
-        <LinearGradient
-          colors={['#FFF8F0', '#FFF5EB', '#FEF0E8', '#FCE8E0']}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={StyleSheet.absoluteFillObject}
-        />
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#7A9E9F" />
-          <Text style={styles.loadingText}>Looking up product...</Text>
-          {scannedCode && (
-            <Text style={styles.loadingBarcode}>{scannedCode}</Text>
-          )}
-        </View>
-      </View>
-    );
-  }
 
   return (
     <View style={styles.container}>
@@ -159,7 +86,7 @@ export default function BarcodeScreen() {
           Scan any skincare product barcode to get{'\n'}a personalized compatibility score
         </Text>
 
-        <TouchableOpacity style={styles.scanButton} onPress={startScanning}>
+        <TouchableOpacity style={styles.scanButton} onPress={handleScanPress}>
           <LinearGradient
             colors={['#A8C5C6', '#7A9E9F']}
             style={styles.scanButtonGradient}
@@ -199,52 +126,6 @@ export default function BarcodeScreen() {
         </View>
       </View>
 
-      {/* Camera Scanner Modal */}
-      <Modal
-        visible={showScanner}
-        animationType="slide"
-        presentationStyle="fullScreen"
-      >
-        <View style={styles.scannerContainer}>
-          <CameraView
-            style={StyleSheet.absoluteFillObject}
-            barcodeScannerSettings={{
-              barcodeTypes: ['ean13', 'ean8', 'upc_a', 'upc_e', 'code128', 'code39'],
-            }}
-            onBarcodeScanned={handleBarcodeScanned}
-          />
-
-          {/* Scanner Overlay */}
-          <View style={styles.scannerOverlay}>
-            <View style={[styles.scannerHeader, { paddingTop: insets.top + 10 }]}>
-              <TouchableOpacity
-                style={styles.closeButton}
-                onPress={() => {
-                  setShowScanner(false);
-                  setScanState('idle');
-                }}
-              >
-                <Ionicons name="close" size={28} color="#FFFFFF" />
-              </TouchableOpacity>
-              <Text style={styles.scannerTitle}>Scan Barcode</Text>
-              <View style={{ width: 44 }} />
-            </View>
-
-            <View style={styles.scannerFrameContainer}>
-              <View style={styles.scannerFrame}>
-                <View style={[styles.scannerCorner, styles.scannerCornerTL]} />
-                <View style={[styles.scannerCorner, styles.scannerCornerTR]} />
-                <View style={[styles.scannerCorner, styles.scannerCornerBL]} />
-                <View style={[styles.scannerCorner, styles.scannerCornerBR]} />
-              </View>
-              <Text style={styles.scannerHint}>
-                Align the barcode within the frame
-              </Text>
-            </View>
-          </View>
-        </View>
-      </Modal>
-
       {/* Manual Input Modal */}
       <Modal
         visible={showManualInput}
@@ -283,12 +164,14 @@ export default function BarcodeScreen() {
             <TouchableOpacity
               style={[
                 styles.submitButton,
-                manualBarcode.length < 8 && styles.submitButtonDisabled,
+                (manualBarcode.length < 8 || isLoading) && styles.submitButtonDisabled,
               ]}
               onPress={handleManualSubmit}
-              disabled={manualBarcode.length < 8}
+              disabled={manualBarcode.length < 8 || isLoading}
             >
-              <Text style={styles.submitButtonText}>Look Up Product</Text>
+              <Text style={styles.submitButtonText}>
+                {isLoading ? 'Looking up...' : 'Look Up Product'}
+              </Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -297,9 +180,6 @@ export default function BarcodeScreen() {
   );
 }
 
-// -----------------------------------------------------------------------------
-// Styles
-// -----------------------------------------------------------------------------
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -459,105 +339,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#4B5563',
   },
-
-  // Loading State
-  loadingContainer: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 16,
-  },
-  loadingText: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#1F2937',
-  },
-  loadingBarcode: {
-    fontSize: 14,
-    color: '#6B7280',
-    fontFamily: 'monospace',
-  },
-
-  // Scanner Modal
-  scannerContainer: {
-    flex: 1,
-    backgroundColor: '#000',
-  },
-  scannerOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'transparent',
-  },
-  scannerHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingBottom: 16,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-  },
-  closeButton: {
-    width: 44,
-    height: 44,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  scannerTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#FFFFFF',
-  },
-  scannerFrameContainer: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  scannerFrame: {
-    width: 280,
-    height: 180,
-    position: 'relative',
-  },
-  scannerCorner: {
-    position: 'absolute',
-    width: 40,
-    height: 40,
-    borderColor: '#FFFFFF',
-  },
-  scannerCornerTL: {
-    top: 0,
-    left: 0,
-    borderTopWidth: 4,
-    borderLeftWidth: 4,
-    borderTopLeftRadius: 12,
-  },
-  scannerCornerTR: {
-    top: 0,
-    right: 0,
-    borderTopWidth: 4,
-    borderRightWidth: 4,
-    borderTopRightRadius: 12,
-  },
-  scannerCornerBL: {
-    bottom: 0,
-    left: 0,
-    borderBottomWidth: 4,
-    borderLeftWidth: 4,
-    borderBottomLeftRadius: 12,
-  },
-  scannerCornerBR: {
-    bottom: 0,
-    right: 0,
-    borderBottomWidth: 4,
-    borderRightWidth: 4,
-    borderBottomRightRadius: 12,
-  },
-  scannerHint: {
-    marginTop: 24,
-    fontSize: 16,
-    color: '#FFFFFF',
-    textAlign: 'center',
-  },
-
-  // Manual Input Modal
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.5)',

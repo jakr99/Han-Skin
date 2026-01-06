@@ -15,7 +15,6 @@ import * as Linking from 'expo-linking';
 import * as WebBrowser from 'expo-web-browser';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import { getAuthRedirectUrl } from '@/lib/authRedirect';
 import { supabase } from '@/lib/supabase';
 
 WebBrowser.maybeCompleteAuthSession();
@@ -33,13 +32,16 @@ export default function SignInScreen() {
 
     setOauthLoading(true);
     try {
-      const redirectTo = getAuthRedirectUrl();
+      const redirectTo = Linking.createURL('auth-callback');
+      console.log('OAuth redirect URL:', redirectTo);
+
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider,
         options: { redirectTo, skipBrowserRedirect: true },
       });
 
       if (error) {
+        console.error('OAuth error:', error);
         Alert.alert('Sign in failed', error.message);
         return;
       }
@@ -49,24 +51,22 @@ export default function SignInScreen() {
         return;
       }
 
+      console.log('Opening OAuth URL:', data.url);
       const result = await WebBrowser.openAuthSessionAsync(data.url, redirectTo);
+      console.log('OAuth result:', result);
+
       if (result.type === 'success' && result.url) {
-        const { queryParams } = Linking.parse(result.url);
-        const code = queryParams?.code;
-        const authCode = typeof code === 'string' ? code : null;
-
-        if (!authCode) {
-          Alert.alert('Sign in failed', 'Missing OAuth confirmation code.');
-          return;
-        }
-
-        const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(authCode);
+        const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(result.url);
         if (exchangeError) {
+          console.error('Exchange error:', exchangeError);
           Alert.alert('Sign in failed', exchangeError.message);
           return;
         }
         router.replace('/(app)');
       }
+    } catch (err) {
+      console.error('OAuth exception:', err);
+      Alert.alert('Sign in failed', 'Could not connect to authentication server. Please check your internet connection.');
     } finally {
       setOauthLoading(false);
     }
@@ -136,7 +136,7 @@ export default function SignInScreen() {
 
         {/* Email link */}
         <TouchableOpacity
-          onPress={() => router.push('/(auth)/sign-in-email')}
+          onPress={() => router.push('/(auth)/email-sign-in')}
           style={styles.emailLinkContainer}
           hitSlop={{ top: 8, bottom: 8, left: 16, right: 16 }}
         >
@@ -156,6 +156,13 @@ export default function SignInScreen() {
           By continuing, you agree to our Terms & Privacy Policy.
         </Text>
 
+        {/* Dev Bypass - Remove in production */}
+        <TouchableOpacity
+          onPress={() => router.replace('/(app)')}
+          style={styles.devButton}
+        >
+          <Text style={styles.devButtonText}>Skip to Home (Dev)</Text>
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -289,4 +296,18 @@ const styles = StyleSheet.create({
     marginTop: 14,
   },
 
+  // Dev button
+  devButton: {
+    marginTop: 16,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    backgroundColor: '#FF6B6B',
+    borderRadius: 8,
+    alignSelf: 'center',
+  },
+  devButtonText: {
+    color: '#FFFFFF',
+    fontSize: 13,
+    fontWeight: '600',
+  },
 });

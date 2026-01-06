@@ -22,6 +22,7 @@ export default function CompleteScreen() {
   const router = useRouter();
 
   const handleUnlock = () => {
+    // Navigate to paywall for subscription
     router.push('/(auth)/onboarding/paywall');
   };
 
