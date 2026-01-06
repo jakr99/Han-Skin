@@ -33,12 +33,15 @@ export default function SignInScreen() {
     setOauthLoading(true);
     try {
       const redirectTo = Linking.createURL('auth-callback');
+      console.log('OAuth redirect URL:', redirectTo);
+
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider,
         options: { redirectTo, skipBrowserRedirect: true },
       });
 
       if (error) {
+        console.error('OAuth error:', error);
         Alert.alert('Sign in failed', error.message);
         return;
       }
@@ -48,15 +51,22 @@ export default function SignInScreen() {
         return;
       }
 
+      console.log('Opening OAuth URL:', data.url);
       const result = await WebBrowser.openAuthSessionAsync(data.url, redirectTo);
+      console.log('OAuth result:', result);
+
       if (result.type === 'success' && result.url) {
         const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(result.url);
         if (exchangeError) {
+          console.error('Exchange error:', exchangeError);
           Alert.alert('Sign in failed', exchangeError.message);
           return;
         }
         router.replace('/(app)');
       }
+    } catch (err) {
+      console.error('OAuth exception:', err);
+      Alert.alert('Sign in failed', 'Could not connect to authentication server. Please check your internet connection.');
     } finally {
       setOauthLoading(false);
     }

@@ -11,13 +11,20 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useAuth } from '@/context/AuthContext';
 
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const { user } = useAuth();
 
   const currentHour = new Date().getHours();
   const greeting = currentHour < 12 ? 'Good morning' : currentHour < 18 ? 'Good afternoon' : 'Good evening';
+
+  // Get user's first name from metadata or email
+  const firstName = user?.user_metadata?.first_name
+    || user?.email?.split('@')[0]
+    || 'there';
 
   return (
     <View style={styles.container}>
@@ -36,7 +43,7 @@ export default function HomeScreen() {
         <View style={styles.header}>
           <View>
             <View style={styles.greetingRow}>
-              <Text style={styles.greeting}>{greeting}, Anna </Text>
+              <Text style={styles.greeting}>{greeting}, {firstName} </Text>
               <Text style={styles.waveEmoji}>👋</Text>
             </View>
             <Text style={styles.subtitle}>Here's your skincare plan for today.</Text>

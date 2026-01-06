@@ -72,7 +72,7 @@ export default function SignUpScreen() {
     }
 
     reset();
-    router.replace('/(auth)/onboarding/paywall');
+    router.replace('/(auth)/onboarding/complete');
   };
 
   return (
