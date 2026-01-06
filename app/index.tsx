@@ -4,6 +4,11 @@ import { useAuth } from '@/context/AuthContext';
 
 export default function Index() {
   const { session, initialized } = useAuth();
+  const forceAuth = process.env.EXPO_PUBLIC_FORCE_AUTH === 'true';
+
+  if (forceAuth) {
+    return <Redirect href="/(auth)/sign-in" />;
+  }
 
   if (!initialized) {
     return (

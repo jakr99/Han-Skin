@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { View, Text, StyleSheet, ScrollView, TextInput, Switch } from 'react-native';
 import { useRouter } from 'expo-router';
 import { OnboardingContainer } from '@/components/layout/OnboardingContainer';
@@ -6,6 +6,7 @@ import { ToggleRow } from '@/components/ui/ToggleRow';
 import { TextureSelector } from '@/components/ui/TextureSelector';
 import { BudgetSlider } from '@/components/ui/BudgetSlider';
 import { Button } from '@/components/ui/Button';
+import { useOnboarding } from '@/context/OnboardingContext';
 
 const VALUES = [
   { id: 'vegan', icon: '🌱', title: 'Vegan', description: 'Plant-based ingredients only' },
@@ -21,22 +22,24 @@ const TEXTURES = [
 
 export default function PreferencesScreen() {
   const router = useRouter();
-  const [values, setValues] = useState<Record<string, boolean>>({
-    vegan: false,
-    cruelty_free: false,
-    fragrance_free: false,
-  });
-  const [texture, setTexture] = useState('serum');
-  const [budgetFriendly, setBudgetFriendly] = useState(false);
-  const [budgetLevel, setBudgetLevel] = useState(50); // 0-100 scale
-  const [otherNotes, setOtherNotes] = useState('');
+  const {
+    values,
+    setValues,
+    texture,
+    setTexture,
+    budgetFriendly,
+    setBudgetFriendly,
+    budgetLevel,
+    setBudgetLevel,
+    otherNotes,
+    setOtherNotes,
+  } = useOnboarding();
 
   const updateValue = (id: string, value: boolean) => {
     setValues((prev) => ({ ...prev, [id]: value }));
   };
 
   const handleContinue = () => {
-    // TODO: Store preferences in context/state
     router.push('/(auth)/sign-up');
   };
 

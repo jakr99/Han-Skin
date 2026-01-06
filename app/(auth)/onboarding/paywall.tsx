@@ -22,12 +22,12 @@ export default function PaywallScreen() {
 
   const handleContinue = () => {
     // TODO: Implement subscription logic
-    router.push('/(auth)/onboarding/complete');
+    router.replace('/(app)');
   };
 
   const handleSkip = () => {
     // Skip paywall for now
-    router.push('/(auth)/onboarding/complete');
+    router.replace('/(app)');
   };
 
   return (

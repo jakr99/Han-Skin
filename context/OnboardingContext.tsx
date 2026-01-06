@@ -82,7 +82,7 @@ export function OnboardingProvider({ children }: { children: React.ReactNode }) 
   });
   const [texture, setTexture] = useState('serum');
   const [budgetFriendly, setBudgetFriendly] = useState(false);
-  const [budgetLevel, setBudgetLevel] = useState(1);
+  const [budgetLevel, setBudgetLevel] = useState(50);
   const [otherNotes, setOtherNotes] = useState('');
 
   const reset = useCallback(() => {
@@ -117,7 +117,7 @@ export function OnboardingProvider({ children }: { children: React.ReactNode }) 
     });
     setTexture('serum');
     setBudgetFriendly(false);
-    setBudgetLevel(1);
+    setBudgetLevel(50);
     setOtherNotes('');
   }, []);
 

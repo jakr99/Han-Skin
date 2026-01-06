@@ -22,9 +22,7 @@ export default function CompleteScreen() {
   const router = useRouter();
 
   const handleUnlock = () => {
-    // TODO: Implement unlock/subscription logic
-    // For now, navigate to main app
-    router.replace('/(tabs)');
+    router.push('/(auth)/onboarding/paywall');
   };
 
   return (

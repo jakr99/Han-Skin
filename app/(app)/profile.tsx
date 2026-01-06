@@ -5,10 +5,12 @@ import {
   ScrollView,
   TouchableOpacity,
   StyleSheet,
+  Alert,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { supabase } from '@/lib/supabase';
 
 // Warm Minimal Color Palette
 const COLORS = {
@@ -112,6 +114,16 @@ export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
 
+  const handleSignOut = async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      Alert.alert('Sign out failed', error.message);
+      return;
+    }
+
+    router.replace('/(auth)/sign-in');
+  };
+
   // Navigation handlers for menu items
   const handleMenuPress = (itemId: string) => {
     switch (itemId) {
@@ -122,8 +134,7 @@ export default function ProfileScreen() {
         router.push('/profile-screens/account');
         break;
       case 'signout':
-        // Handle sign out - would use AuthContext
-        console.log('Sign out pressed');
+        handleSignOut();
         break;
       // Subscription items
       case 'plan':

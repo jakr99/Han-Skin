@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
 import { OnboardingContainer } from '@/components/layout/OnboardingContainer';
 import { GoalCard } from '@/components/ui/GoalCard';
 import { Button } from '@/components/ui/Button';
+import { useOnboarding } from '@/context/OnboardingContext';
 
 // Ordered by most common goals - more saturated tints
 const GOALS = [
@@ -19,10 +20,10 @@ const MAX_SELECTIONS = 2;
 
 export default function GoalsScreen() {
   const router = useRouter();
-  const [selectedGoals, setSelectedGoals] = useState<string[]>([]);
+  const { goals, setGoals } = useOnboarding();
 
   const toggleGoal = (goalId: string) => {
-    setSelectedGoals((prev) => {
+    setGoals((prev) => {
       if (prev.includes(goalId)) {
         return prev.filter((id) => id !== goalId);
       }
@@ -51,7 +52,7 @@ export default function GoalsScreen() {
             <Text style={styles.counterLabel}>Choose up to 2</Text>
             <View style={styles.counterChip}>
               <Text style={styles.counterText}>
-                {selectedGoals.length} / {MAX_SELECTIONS}
+                {goals.length} / {MAX_SELECTIONS}
               </Text>
             </View>
           </View>
@@ -61,26 +62,26 @@ export default function GoalsScreen() {
         <View style={styles.goalsGrid}>
           <View style={styles.row}>
             <View style={styles.goalItem}>
-              <GoalCard label={GOALS[0].label} icon={GOALS[0].icon} tintColor={GOALS[0].tint} selected={selectedGoals.includes(GOALS[0].id)} onPress={() => toggleGoal(GOALS[0].id)} />
+              <GoalCard label={GOALS[0].label} icon={GOALS[0].icon} tintColor={GOALS[0].tint} selected={goals.includes(GOALS[0].id)} onPress={() => toggleGoal(GOALS[0].id)} />
             </View>
             <View style={styles.goalItem}>
-              <GoalCard label={GOALS[1].label} icon={GOALS[1].icon} tintColor={GOALS[1].tint} selected={selectedGoals.includes(GOALS[1].id)} onPress={() => toggleGoal(GOALS[1].id)} />
-            </View>
-          </View>
-          <View style={styles.row}>
-            <View style={styles.goalItem}>
-              <GoalCard label={GOALS[2].label} icon={GOALS[2].icon} tintColor={GOALS[2].tint} selected={selectedGoals.includes(GOALS[2].id)} onPress={() => toggleGoal(GOALS[2].id)} />
-            </View>
-            <View style={styles.goalItem}>
-              <GoalCard label={GOALS[3].label} icon={GOALS[3].icon} tintColor={GOALS[3].tint} selected={selectedGoals.includes(GOALS[3].id)} onPress={() => toggleGoal(GOALS[3].id)} />
+              <GoalCard label={GOALS[1].label} icon={GOALS[1].icon} tintColor={GOALS[1].tint} selected={goals.includes(GOALS[1].id)} onPress={() => toggleGoal(GOALS[1].id)} />
             </View>
           </View>
           <View style={styles.row}>
             <View style={styles.goalItem}>
-              <GoalCard label={GOALS[4].label} icon={GOALS[4].icon} tintColor={GOALS[4].tint} selected={selectedGoals.includes(GOALS[4].id)} onPress={() => toggleGoal(GOALS[4].id)} />
+              <GoalCard label={GOALS[2].label} icon={GOALS[2].icon} tintColor={GOALS[2].tint} selected={goals.includes(GOALS[2].id)} onPress={() => toggleGoal(GOALS[2].id)} />
             </View>
             <View style={styles.goalItem}>
-              <GoalCard label={GOALS[5].label} icon={GOALS[5].icon} tintColor={GOALS[5].tint} selected={selectedGoals.includes(GOALS[5].id)} onPress={() => toggleGoal(GOALS[5].id)} />
+              <GoalCard label={GOALS[3].label} icon={GOALS[3].icon} tintColor={GOALS[3].tint} selected={goals.includes(GOALS[3].id)} onPress={() => toggleGoal(GOALS[3].id)} />
+            </View>
+          </View>
+          <View style={styles.row}>
+            <View style={styles.goalItem}>
+              <GoalCard label={GOALS[4].label} icon={GOALS[4].icon} tintColor={GOALS[4].tint} selected={goals.includes(GOALS[4].id)} onPress={() => toggleGoal(GOALS[4].id)} />
+            </View>
+            <View style={styles.goalItem}>
+              <GoalCard label={GOALS[5].label} icon={GOALS[5].icon} tintColor={GOALS[5].tint} selected={goals.includes(GOALS[5].id)} onPress={() => toggleGoal(GOALS[5].id)} />
             </View>
           </View>
         </View>
@@ -90,7 +91,7 @@ export default function GoalsScreen() {
           <Button
             title="Continue"
             onPress={handleContinue}
-            disabled={selectedGoals.length < MAX_SELECTIONS}
+            disabled={goals.length < MAX_SELECTIONS}
           />
           <Text style={styles.helperText}>
             You can change this anytime.

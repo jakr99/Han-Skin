@@ -14,6 +14,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Logo } from '@/components/domain/Logo';
 import { Button } from '@/components/ui/Button';
 import { OnboardingContainer } from '@/components/layout/OnboardingContainer';
+import { useOnboarding } from '@/context/OnboardingContext';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -30,10 +31,36 @@ type PickerType = 'month' | 'day' | 'year' | null;
 export default function BirthdayScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const {
+    birthdayMonth,
+    birthdayDay,
+    birthdayYear,
+    setBirthdayMonth,
+    setBirthdayDay,
+    setBirthdayYear,
+  } = useOnboarding();
 
-  const [month, setMonth] = useState<number | null>(null);
-  const [day, setDay] = useState<number | null>(null);
-  const [year, setYear] = useState<number | null>(null);
+  const [month, setMonth] = useState<number | null>(() => {
+    if (!birthdayMonth) {
+      return null;
+    }
+    const parsed = Number.parseInt(birthdayMonth, 10);
+    return Number.isNaN(parsed) ? null : parsed - 1;
+  });
+  const [day, setDay] = useState<number | null>(() => {
+    if (!birthdayDay) {
+      return null;
+    }
+    const parsed = Number.parseInt(birthdayDay, 10);
+    return Number.isNaN(parsed) ? null : parsed;
+  });
+  const [year, setYear] = useState<number | null>(() => {
+    if (!birthdayYear) {
+      return null;
+    }
+    const parsed = Number.parseInt(birthdayYear, 10);
+    return Number.isNaN(parsed) ? null : parsed;
+  });
   const [activePicker, setActivePicker] = useState<PickerType>(null);
 
   const handleContinue = () => {
@@ -65,15 +92,24 @@ export default function BirthdayScreen() {
     if (activePicker === 'month') {
       data = MONTHS.map((m, i) => ({ label: m, value: i }));
       title = 'Month';
-      onSelect = (item) => setMonth(item.value);
+      onSelect = (item) => {
+        setMonth(item.value);
+        setBirthdayMonth(String(item.value + 1).padStart(2, '0'));
+      };
     } else if (activePicker === 'day') {
       data = DAYS.map(d => ({ label: d.toString(), value: d }));
       title = 'Day';
-      onSelect = (item) => setDay(item.value);
+      onSelect = (item) => {
+        setDay(item.value);
+        setBirthdayDay(String(item.value).padStart(2, '0'));
+      };
     } else if (activePicker === 'year') {
       data = YEARS.map(y => ({ label: y.toString(), value: y }));
       title = 'Year';
-      onSelect = (item) => setYear(item.value);
+      onSelect = (item) => {
+        setYear(item.value);
+        setBirthdayYear(String(item.value));
+      };
     }
 
     return (
