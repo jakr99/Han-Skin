@@ -106,7 +106,7 @@ export default function SignInScreen() {
 
         {/* Subcopy */}
         <Text style={styles.subcopy}>
-          Scan products and build a routine that fits your skin.
+          Scan products and build your glass skin routine.
         </Text>
 
         {/* Buttons */}

@@ -5,13 +5,16 @@ import {
   ActivityIndicator,
   View,
   StyleSheet,
+  Dimensions,
 } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
+
+const { height: SCREEN_HEIGHT } = Dimensions.get('window');
+const isSmallDevice = SCREEN_HEIGHT < 700;
 
 interface ButtonProps {
   title: string;
   onPress: () => void;
-  variant?: 'primary' | 'outline' | 'social';
+  variant?: 'primary' | 'outline' | 'secondary';
   icon?: React.ReactNode;
   loading?: boolean;
   disabled?: boolean;
@@ -34,44 +37,45 @@ export function Button({
       <TouchableOpacity
         onPress={onPress}
         disabled={isDisabled}
-        activeOpacity={0.85}
+        activeOpacity={0.9}
         style={[
+          styles.primaryButton,
           fullWidth && styles.fullWidth,
-          !isDisabled && styles.activeButtonShadow,
+          isDisabled && styles.primaryButtonDisabled,
         ]}
       >
-        <LinearGradient
-          colors={isDisabled ? ['#D1DEDE', '#C4D4D4'] : ['#6B9293', '#4A7A7B']}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={[
-            styles.primaryButton,
-            isDisabled && styles.primaryButtonDisabled,
-          ]}
-        >
-          {loading ? (
-            <ActivityIndicator color="#FFFFFF" />
-          ) : (
-            <Text style={[
-              styles.primaryText,
-              isDisabled && styles.primaryTextDisabled,
-            ]}>{title}</Text>
-          )}
-        </LinearGradient>
+        {loading ? (
+          <ActivityIndicator color="#FFFFFF" />
+        ) : (
+          <View style={styles.buttonContent}>
+            {icon && <View style={styles.iconContainer}>{icon}</View>}
+            <Text style={styles.primaryText}>{title}</Text>
+          </View>
+        )}
       </TouchableOpacity>
     );
   }
 
-  if (variant === 'social') {
+  if (variant === 'secondary') {
     return (
       <TouchableOpacity
         onPress={onPress}
         disabled={isDisabled}
         activeOpacity={0.7}
-        style={[styles.socialButton, fullWidth && styles.fullWidth]}
+        style={[
+          styles.secondaryButton,
+          fullWidth && styles.fullWidth,
+          isDisabled && styles.secondaryButtonDisabled,
+        ]}
       >
-        {icon && <View style={styles.socialIcon}>{icon}</View>}
-        <Text style={styles.socialText}>{title}</Text>
+        {loading ? (
+          <ActivityIndicator color="#1F2937" />
+        ) : (
+          <View style={styles.buttonContent}>
+            {icon && <View style={styles.iconContainer}>{icon}</View>}
+            <Text style={styles.secondaryText}>{title}</Text>
+          </View>
+        )}
       </TouchableOpacity>
     );
   }
@@ -82,12 +86,19 @@ export function Button({
       onPress={onPress}
       disabled={isDisabled}
       activeOpacity={0.7}
-      style={[styles.outlineButton, fullWidth && styles.fullWidth]}
+      style={[
+        styles.outlineButton,
+        fullWidth && styles.fullWidth,
+        isDisabled && styles.outlineButtonDisabled,
+      ]}
     >
       {loading ? (
-        <ActivityIndicator color="#7A9E9F" />
+        <ActivityIndicator color="#6B7280" />
       ) : (
-        <Text style={styles.outlineText}>{title}</Text>
+        <View style={styles.buttonContent}>
+          {icon && <View style={styles.iconContainer}>{icon}</View>}
+          <Text style={styles.outlineText}>{title}</Text>
+        </View>
       )}
     </TouchableOpacity>
   );
@@ -97,61 +108,68 @@ const styles = StyleSheet.create({
   fullWidth: {
     width: '100%',
   },
-  activeButtonShadow: {
-    shadowColor: '#4A7A7B',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 6,
+  buttonContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  iconContainer: {
+    marginRight: 8,
   },
   primaryButton: {
-    height: 52,
-    borderRadius: 26,
+    height: isSmallDevice ? 52 : 56,
+    backgroundColor: '#111111',
+    borderRadius: 18,
     justifyContent: 'center',
     alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.10,
+    shadowRadius: 20,
+    elevation: 4,
   },
   primaryButtonDisabled: {
-    opacity: 0.6,
+    backgroundColor: '#D1D5DB',
+    shadowOpacity: 0,
+    elevation: 0,
   },
   primaryText: {
     color: '#FFFFFF',
-    fontSize: 16,
+    fontSize: 17,
     fontWeight: '600',
-    letterSpacing: 0.3,
   },
-  primaryTextDisabled: {
-    opacity: 0.8,
+  secondaryButton: {
+    height: isSmallDevice ? 52 : 56,
+    backgroundColor: 'rgba(255, 255, 255, 0.78)',
+    borderRadius: 18,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(17, 24, 39, 0.10)',
+  },
+  secondaryButtonDisabled: {
+    opacity: 0.5,
+  },
+  secondaryText: {
+    color: '#111827',
+    fontSize: 17,
+    fontWeight: '500',
   },
   outlineButton: {
-    height: 52,
-    borderRadius: 26,
+    height: isSmallDevice ? 52 : 56,
+    backgroundColor: 'transparent',
+    borderRadius: 18,
     borderWidth: 1,
-    borderColor: '#E5E2DE',
+    borderColor: 'rgba(17, 24, 39, 0.15)',
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
+  },
+  outlineButtonDisabled: {
+    opacity: 0.5,
   },
   outlineText: {
-    color: '#7A9E9F',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  socialButton: {
-    height: 48,
-    borderRadius: 24,
-    borderWidth: 1,
-    borderColor: '#E5E2DE',
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-  },
-  socialIcon: {
-    marginRight: 8,
-  },
-  socialText: {
-    color: '#3D3D3D',
-    fontSize: 14,
+    color: '#6B7280',
+    fontSize: 17,
     fontWeight: '500',
   },
 });

@@ -1,19 +1,23 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TextInput } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TextInput, Switch, Dimensions } from 'react-native';
 import { useRouter } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { OnboardingContainer } from '@/components/layout/OnboardingContainer';
-import { ToggleRow } from '@/components/ui/ToggleRow';
 import { Button } from '@/components/ui/Button';
+
+const { height: SCREEN_HEIGHT } = Dimensions.get('window');
+const isSmallDevice = SCREEN_HEIGHT < 700;
 
 const SENSITIVITIES = [
   { id: 'fragrance', icon: '🧴', title: 'Fragrance', description: 'React or have sensitivity?' },
   { id: 'acids', icon: '🧪', title: 'Acids', description: 'React or have sensitivity?' },
-  { id: 'retinol', icon: '🧴', title: 'Retinol', description: 'React or have sensitivity?' },
+  { id: 'retinol', icon: '✨', title: 'Retinol', description: 'React or have sensitivity?' },
   { id: 'essential_oils', icon: '🌿', title: 'Essential oils', description: 'React or have sensitivity?' },
 ];
 
 export default function SensitivitiesScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const [toggles, setToggles] = useState<Record<string, boolean>>({
     fragrance: false,
     acids: false,
@@ -27,7 +31,6 @@ export default function SensitivitiesScreen() {
   };
 
   const handleContinue = () => {
-    // TODO: Store sensitivities in context/state
     router.push('/(auth)/onboarding/preferences');
   };
 
@@ -49,14 +52,22 @@ export default function SensitivitiesScreen() {
           contentContainerStyle={styles.scrollContent}
         >
           {SENSITIVITIES.map((item) => (
-            <ToggleRow
-              key={item.id}
-              icon={item.icon}
-              title={item.title}
-              description={item.description}
-              value={toggles[item.id]}
-              onValueChange={(value) => updateToggle(item.id, value)}
-            />
+            <View key={item.id} style={styles.toggleCard}>
+              <View style={styles.toggleIconContainer}>
+                <Text style={styles.toggleIcon}>{item.icon}</Text>
+              </View>
+              <View style={styles.toggleContent}>
+                <Text style={styles.toggleTitle}>{item.title}</Text>
+                <Text style={styles.toggleDescription}>{item.description}</Text>
+              </View>
+              <Switch
+                value={toggles[item.id]}
+                onValueChange={(value) => updateToggle(item.id, value)}
+                trackColor={{ false: 'rgba(17, 24, 39, 0.08)', true: '#1F2937' }}
+                thumbColor="#FFFFFF"
+                ios_backgroundColor="rgba(17, 24, 39, 0.08)"
+              />
+            </View>
           ))}
 
           {/* Other Sensitivities */}
@@ -65,7 +76,7 @@ export default function SensitivitiesScreen() {
             <TextInput
               style={styles.otherInput}
               placeholder="Please specify other sensitivities..."
-              placeholderTextColor="#A0A0A0"
+              placeholderTextColor="#9CA3AF"
               value={otherSensitivities}
               onChangeText={setOtherSensitivities}
               multiline
@@ -74,7 +85,7 @@ export default function SensitivitiesScreen() {
         </ScrollView>
 
         {/* Bottom Section */}
-        <View style={styles.bottomSection}>
+        <View style={[styles.bottomSection, { paddingBottom: insets.bottom + 16 }]}>
           <Button
             title="Continue"
             onPress={handleContinue}
@@ -94,56 +105,93 @@ const styles = StyleSheet.create({
   },
   titleContainer: {
     alignItems: 'center',
-    marginTop: 16,
-    marginBottom: 24,
+    paddingTop: isSmallDevice ? 12 : 20,
+    marginBottom: isSmallDevice ? 16 : 24,
   },
   title: {
-    fontSize: 26,
+    fontSize: isSmallDevice ? 26 : 30,
     fontWeight: '600',
-    color: '#3D3D3D',
+    color: '#1F2937',
     textAlign: 'center',
+    letterSpacing: -0.5,
   },
   subtitle: {
-    fontSize: 14,
-    color: '#7A7A7A',
+    fontSize: 15,
+    color: '#6B7280',
     marginTop: 8,
     textAlign: 'center',
-    lineHeight: 20,
+    lineHeight: 22,
   },
   scrollView: {
     flex: 1,
   },
   scrollContent: {
-    paddingHorizontal: 4,
+    gap: 10,
+    paddingBottom: 8,
+  },
+  toggleCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: 'rgba(17, 24, 39, 0.08)',
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+  },
+  toggleIconContainer: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    backgroundColor: 'rgba(17, 24, 39, 0.04)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+  toggleIcon: {
+    fontSize: 22,
+  },
+  toggleContent: {
+    flex: 1,
+  },
+  toggleTitle: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: '#1F2937',
+  },
+  toggleDescription: {
+    fontSize: 13,
+    color: '#6B7280',
+    marginTop: 2,
   },
   otherSection: {
     marginTop: 16,
   },
   otherLabel: {
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: '500',
-    color: '#3D3D3D',
-    marginBottom: 8,
+    color: '#1F2937',
+    marginBottom: 10,
   },
   otherInput: {
     backgroundColor: '#FFFFFF',
     borderWidth: 1,
-    borderColor: '#E5E2DE',
-    borderRadius: 12,
+    borderColor: 'rgba(17, 24, 39, 0.08)',
+    borderRadius: 14,
     paddingHorizontal: 16,
     paddingVertical: 14,
-    fontSize: 14,
-    color: '#3D3D3D',
-    minHeight: 50,
+    fontSize: 15,
+    color: '#1F2937',
+    minHeight: 80,
+    textAlignVertical: 'top',
   },
   bottomSection: {
     alignItems: 'center',
     paddingTop: 16,
-    paddingBottom: 32,
   },
   helperText: {
     fontSize: 13,
-    color: '#A0A0A0',
+    color: '#9CA3AF',
     marginTop: 16,
   },
 });

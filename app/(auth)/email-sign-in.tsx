@@ -8,12 +8,16 @@ import {
   TouchableOpacity,
   Alert,
   StyleSheet,
+  Dimensions,
+  StatusBar,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
 import { supabase } from '@/lib/supabase';
+
+const { height: SCREEN_HEIGHT } = Dimensions.get('window');
+const isSmallDevice = SCREEN_HEIGHT < 700;
 
 export default function EmailSignInScreen() {
   const router = useRouter();
@@ -45,17 +49,20 @@ export default function EmailSignInScreen() {
     router.replace('/(app)');
   };
 
+  const isFormValid = email.trim() && password;
+
   return (
     <View style={styles.container}>
-      <LinearGradient
-        colors={['#FFF8F0', '#FFF5EB', '#FEF0E8', '#FCE8E0']}
-        style={StyleSheet.absoluteFillObject}
-      />
+      <StatusBar barStyle="dark-content" />
 
       {/* Header */}
-      <View style={[styles.header, { paddingTop: insets.top + 10 }]}>
-        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-          <Ionicons name="arrow-back" size={24} color="#1F2937" />
+      <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => router.back()}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+        >
+          <Ionicons name="chevron-back" size={28} color="#1F2937" />
         </TouchableOpacity>
       </View>
 
@@ -64,13 +71,14 @@ export default function EmailSignInScreen() {
         style={styles.content}
       >
         <View style={styles.formContainer}>
+          {/* Title Section */}
           <Text style={styles.title}>Welcome back</Text>
           <Text style={styles.subtitle}>Sign in with your email and password</Text>
 
           {/* Email Input */}
-          <View style={styles.inputGroup}>
-            <View style={styles.inputRow}>
-              <Ionicons name="mail-outline" size={20} color="#6B7280" />
+          <View style={styles.inputContainer}>
+            <View style={styles.inputWrapper}>
+              <Ionicons name="mail-outline" size={20} color="#9CA3AF" style={styles.inputIcon} />
               <TextInput
                 style={styles.textInput}
                 placeholder="Email"
@@ -80,14 +88,15 @@ export default function EmailSignInScreen() {
                 keyboardType="email-address"
                 autoCapitalize="none"
                 autoCorrect={false}
+                autoComplete="email"
               />
             </View>
           </View>
 
           {/* Password Input */}
-          <View style={styles.inputGroup}>
-            <View style={styles.inputRow}>
-              <Ionicons name="lock-closed-outline" size={20} color="#6B7280" />
+          <View style={styles.inputContainer}>
+            <View style={styles.inputWrapper}>
+              <Ionicons name="lock-closed-outline" size={20} color="#9CA3AF" style={styles.inputIcon} />
               <TextInput
                 style={styles.textInput}
                 placeholder="Password"
@@ -95,36 +104,36 @@ export default function EmailSignInScreen() {
                 value={password}
                 onChangeText={setPassword}
                 secureTextEntry={!showPassword}
+                autoComplete="password"
               />
-              <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+              <TouchableOpacity
+                onPress={() => setShowPassword(!showPassword)}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              >
                 <Ionicons
                   name={showPassword ? 'eye-off-outline' : 'eye-outline'}
                   size={20}
-                  color="#6B7280"
+                  color="#9CA3AF"
                 />
               </TouchableOpacity>
             </View>
           </View>
 
           {/* Forgot Password */}
-          <TouchableOpacity style={styles.forgotPassword}>
+          <TouchableOpacity style={styles.forgotPasswordContainer}>
             <Text style={styles.forgotPasswordText}>Forgot password?</Text>
           </TouchableOpacity>
 
           {/* Sign In Button */}
           <TouchableOpacity
-            style={[styles.signInButton, (!email.trim() || !password) && styles.signInButtonDisabled]}
+            style={[styles.signInButton, !isFormValid && styles.signInButtonDisabled]}
             onPress={handleSignIn}
-            disabled={loading || !email.trim() || !password}
+            disabled={loading || !isFormValid}
+            activeOpacity={0.9}
           >
-            <LinearGradient
-              colors={email.trim() && password ? ['#A8C5C6', '#7A9E9F'] : ['#D1D5DB', '#9CA3AF']}
-              style={styles.signInButtonGradient}
-            >
-              <Text style={styles.signInButtonText}>
-                {loading ? 'Signing in...' : 'Sign In'}
-              </Text>
-            </LinearGradient>
+            <Text style={styles.signInButtonText}>
+              {loading ? 'Signing in...' : 'Sign In'}
+            </Text>
           </TouchableOpacity>
 
           {/* Create Account Link */}
@@ -143,14 +152,15 @@ export default function EmailSignInScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#FAFAF8',
   },
   header: {
     paddingHorizontal: 16,
     paddingBottom: 8,
   },
   backButton: {
-    width: 40,
-    height: 40,
+    width: 44,
+    height: 44,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -161,77 +171,90 @@ const styles = StyleSheet.create({
   formContainer: {
     flex: 1,
     justifyContent: 'center',
-    marginTop: -60,
+    marginTop: isSmallDevice ? -40 : -60,
   },
   title: {
-    fontSize: 28,
-    fontWeight: '700',
+    fontSize: isSmallDevice ? 28 : 32,
+    fontWeight: '600',
     color: '#1F2937',
     textAlign: 'center',
-    marginBottom: 8,
+    letterSpacing: -0.5,
   },
   subtitle: {
-    fontSize: 16,
+    fontSize: isSmallDevice ? 15 : 16,
+    fontWeight: '400',
     color: '#6B7280',
     textAlign: 'center',
-    marginBottom: 32,
+    marginTop: 8,
+    marginBottom: isSmallDevice ? 28 : 36,
   },
-  inputGroup: {
-    marginBottom: 16,
+  inputContainer: {
+    marginBottom: 14,
   },
-  inputRow: {
+  inputWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#FFFFFF',
-    borderRadius: 12,
+    borderRadius: 16,
     borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderColor: 'rgba(17, 24, 39, 0.08)',
     paddingHorizontal: 16,
-    paddingVertical: 14,
-    gap: 12,
+    height: isSmallDevice ? 52 : 56,
+  },
+  inputIcon: {
+    marginRight: 12,
   },
   textInput: {
     flex: 1,
     fontSize: 16,
     color: '#1F2937',
   },
-  forgotPassword: {
+  forgotPasswordContainer: {
     alignSelf: 'flex-end',
-    marginBottom: 24,
+    marginBottom: isSmallDevice ? 24 : 28,
+    marginTop: 4,
   },
   forgotPasswordText: {
     fontSize: 14,
-    color: '#7A9E9F',
+    color: '#6B7280',
     fontWeight: '500',
   },
   signInButton: {
-    borderRadius: 28,
-    overflow: 'hidden',
-    marginBottom: 24,
+    height: isSmallDevice ? 52 : 56,
+    backgroundColor: '#111111',
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.10,
+    shadowRadius: 20,
+    elevation: 4,
   },
   signInButtonDisabled: {
-    opacity: 0.7,
-  },
-  signInButtonGradient: {
-    paddingVertical: 16,
-    alignItems: 'center',
+    backgroundColor: '#D1D5DB',
+    shadowOpacity: 0,
+    elevation: 0,
   },
   signInButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
     color: '#FFFFFF',
+    fontSize: 17,
+    fontWeight: '600',
   },
   createAccountContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: isSmallDevice ? 20 : 24,
   },
   createAccountText: {
-    fontSize: 14,
-    color: '#6B7280',
+    fontSize: 15,
+    fontWeight: '400',
+    color: 'rgba(17, 24, 39, 0.55)',
   },
   createAccountLink: {
-    fontSize: 14,
-    color: '#7A9E9F',
+    fontSize: 15,
     fontWeight: '600',
+    color: 'rgba(17, 24, 39, 0.70)',
   },
 });

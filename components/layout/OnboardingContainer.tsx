@@ -1,10 +1,11 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, TouchableOpacity, StyleSheet, StatusBar, Dimensions } from 'react-native';
 import { useRouter } from 'expo-router';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { LinearGradient } from 'expo-linear-gradient';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { ProgressDots } from '@/components/ui/ProgressDots';
+
+const { height: SCREEN_HEIGHT } = Dimensions.get('window');
+const isSmallDevice = SCREEN_HEIGHT < 700;
 
 interface OnboardingContainerProps {
   children: React.ReactNode;
@@ -20,62 +21,77 @@ export function OnboardingContainer({
   showBackButton = true,
 }: OnboardingContainerProps) {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
+
+  const progress = (currentStep / totalSteps) * 100;
 
   return (
-    <LinearGradient
-      colors={['#FDF5F0', '#F5F0F5', '#F0F5F5']}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 1 }}
-      style={styles.gradient}
-    >
-      <SafeAreaView style={styles.container}>
-        {/* Header */}
-        <View style={styles.header}>
-          {showBackButton ? (
-            <TouchableOpacity
-              onPress={() => router.back()}
-              style={styles.backButton}
-            >
-              <Ionicons name="arrow-back" size={24} color="#3D3D3D" />
-            </TouchableOpacity>
-          ) : (
-            <View style={styles.backButton} />
-          )}
+    <View style={styles.container}>
+      <StatusBar barStyle="dark-content" />
 
-          <ProgressDots total={totalSteps} current={currentStep} />
-
+      {/* Header */}
+      <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
+        {showBackButton ? (
+          <TouchableOpacity
+            onPress={() => router.back()}
+            style={styles.backButton}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          >
+            <Ionicons name="chevron-back" size={28} color="#1F2937" />
+          </TouchableOpacity>
+        ) : (
           <View style={styles.backButton} />
+        )}
+
+        {/* Progress Bar */}
+        <View style={styles.progressContainer}>
+          <View style={styles.progressBar}>
+            <View style={[styles.progressFill, { width: `${progress}%` }]} />
+          </View>
         </View>
 
-        {/* Content */}
-        <View style={styles.content}>
-          {children}
-        </View>
-      </SafeAreaView>
-    </LinearGradient>
+        <View style={styles.backButton} />
+      </View>
+
+      {/* Content */}
+      <View style={styles.content}>
+        {children}
+      </View>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  gradient: {
-    flex: 1,
-  },
   container: {
     flex: 1,
+    backgroundColor: '#FAFAF8',
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 16,
-    paddingTop: 8,
     paddingBottom: 16,
   },
   backButton: {
-    width: 40,
-    height: 40,
+    width: 44,
+    height: 44,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  progressContainer: {
+    flex: 1,
+    paddingHorizontal: 16,
+  },
+  progressBar: {
+    height: 4,
+    backgroundColor: 'rgba(17, 24, 39, 0.08)',
+    borderRadius: 2,
+  },
+  progressFill: {
+    height: '100%',
+    backgroundColor: '#1F2937',
+    borderRadius: 2,
   },
   content: {
     flex: 1,

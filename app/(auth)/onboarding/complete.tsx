@@ -1,10 +1,12 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions, StatusBar } from 'react-native';
 import { useRouter } from 'expo-router';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { LinearGradient } from 'expo-linear-gradient';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { RoutineCard } from '@/components/ui/RoutineCard';
+import { Button } from '@/components/ui/Button';
+
+const { height: SCREEN_HEIGHT } = Dimensions.get('window');
+const isSmallDevice = SCREEN_HEIGHT < 700;
 
 const MORNING_STEPS = [
   { number: 1, name: 'Cleanser' },
@@ -20,135 +22,139 @@ const EVENING_STEPS = [
 
 export default function CompleteScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
 
   const handleUnlock = () => {
-    // Navigate to paywall for subscription
     router.push('/(auth)/onboarding/paywall');
   };
 
   return (
-    <LinearGradient
-      colors={['#FDF8F5', '#F5F0F5', '#F0F5F5']}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 1 }}
-      style={styles.gradient}
-    >
-      <SafeAreaView style={styles.container}>
-        <ScrollView
-          style={styles.scrollView}
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={styles.scrollContent}
-        >
-          {/* Header */}
-          <View style={styles.header}>
-            <Text style={styles.sparkle}>✨</Text>
-            <Text style={styles.title}>Congratulations!</Text>
-          </View>
-          <Text style={styles.subtitle}>
-            Your personalized skincare routine is ready!
-          </Text>
+    <View style={styles.container}>
+      <StatusBar barStyle="dark-content" />
 
-          {/* Morning Routine */}
-          <RoutineCard
-            title="Your Morning Routine"
-            icon="🌅"
-            steps={MORNING_STEPS}
-            badge="4 day streak!"
-            locked={true}
-          />
-
-          {/* Evening Routine */}
-          <RoutineCard
-            title="Your Evening Routine"
-            icon="🌙"
-            steps={EVENING_STEPS}
-            locked={true}
-          />
-
-          {/* Track Your Progress Section */}
-          <View style={styles.progressSection}>
-            <Text style={styles.progressTitle}>Track Your Progress</Text>
-
-            <View style={styles.timelineCard}>
-              <View style={styles.timelineHeader}>
-                <Text style={styles.timelineTitle}>Timeline of Results</Text>
-                <Ionicons name="lock-closed" size={14} color="#A0A0A0" />
-              </View>
-
-              {/* Timeline labels */}
-              <View style={styles.timelineLabels}>
-                <Text style={styles.timelineLabel}>1 week</Text>
-                <Text style={styles.timelineLabel}>4 weeks</Text>
-              </View>
-
-              {/* Blurred graph placeholder */}
-              <View style={styles.graphContainer}>
-                <LinearGradient
-                  colors={['#E8F0F0', '#D8E8E8']}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 0 }}
-                  style={styles.graphLine}
-                />
-                <View style={styles.graphDots}>
-                  <View style={[styles.graphDot, { left: '10%' }]} />
-                  <View style={[styles.graphDot, { left: '30%' }]} />
-                  <View style={[styles.graphDot, { left: '50%' }]} />
-                  <View style={[styles.graphDot, { left: '70%' }]} />
-                  <View style={[styles.graphDot, { left: '90%' }]} />
-                </View>
-                <View style={styles.lockOverlay}>
-                  <Text style={styles.lockOverlayText}>Lock your path</Text>
-                </View>
-              </View>
-            </View>
-
-            {/* Unlock message */}
-            <View style={styles.unlockMessage}>
-              <Ionicons name="lock-closed" size={14} color="#7A9E9F" />
-              <Text style={styles.unlockMessageText}>
-                Unlock your detailed skin report!
-              </Text>
-            </View>
-          </View>
-        </ScrollView>
-
-        {/* Bottom Section */}
-        <View style={styles.bottomSection}>
-          <TouchableOpacity
-            onPress={handleUnlock}
-            activeOpacity={0.9}
-          >
-            <LinearGradient
-              colors={['#7A9E9F', '#6B8E8F']}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 0 }}
-              style={styles.unlockButton}
-            >
-              <Text style={styles.unlockButtonText}>Unlock Full Routine</Text>
-            </LinearGradient>
-          </TouchableOpacity>
-          <Text style={styles.disclaimer}>
-            Reveal your full skincare routine &{'\n'}detailed skin report.
-          </Text>
+      <ScrollView
+        style={styles.scrollView}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={[styles.scrollContent, { paddingTop: insets.top + 24 }]}
+      >
+        {/* Header */}
+        <View style={styles.header}>
+          <Text style={styles.sparkle}>✨</Text>
+          <Text style={styles.title}>Congratulations!</Text>
         </View>
-      </SafeAreaView>
-    </LinearGradient>
+        <Text style={styles.subtitle}>
+          Your personalized skincare routine is ready!
+        </Text>
+
+        {/* Morning Routine */}
+        <View style={styles.routineCard}>
+          <View style={styles.routineHeader}>
+            <View style={styles.routineIconContainer}>
+              <Text style={styles.routineIcon}>🌅</Text>
+            </View>
+            <Text style={styles.routineTitle}>Your Morning Routine</Text>
+            <View style={styles.streakBadge}>
+              <Text style={styles.streakText}>4 day streak!</Text>
+            </View>
+          </View>
+          <View style={styles.routineSteps}>
+            {MORNING_STEPS.map((step) => (
+              <View key={step.number} style={styles.stepRow}>
+                <View style={styles.stepNumber}>
+                  <Text style={styles.stepNumberText}>{step.number}</Text>
+                </View>
+                <Text style={styles.stepName}>{step.name}</Text>
+                <Ionicons name="lock-closed" size={14} color="#9CA3AF" />
+              </View>
+            ))}
+          </View>
+        </View>
+
+        {/* Evening Routine */}
+        <View style={styles.routineCard}>
+          <View style={styles.routineHeader}>
+            <View style={styles.routineIconContainer}>
+              <Text style={styles.routineIcon}>🌙</Text>
+            </View>
+            <Text style={styles.routineTitle}>Your Evening Routine</Text>
+          </View>
+          <View style={styles.routineSteps}>
+            {EVENING_STEPS.map((step) => (
+              <View key={step.number} style={styles.stepRow}>
+                <View style={styles.stepNumber}>
+                  <Text style={styles.stepNumberText}>{step.number}</Text>
+                </View>
+                <Text style={styles.stepName}>{step.name}</Text>
+                <Ionicons name="lock-closed" size={14} color="#9CA3AF" />
+              </View>
+            ))}
+          </View>
+        </View>
+
+        {/* Track Your Progress Section */}
+        <View style={styles.progressSection}>
+          <Text style={styles.progressTitle}>Track Your Progress</Text>
+
+          <View style={styles.timelineCard}>
+            <View style={styles.timelineHeader}>
+              <Text style={styles.timelineTitle}>Timeline of Results</Text>
+              <Ionicons name="lock-closed" size={14} color="#9CA3AF" />
+            </View>
+
+            {/* Timeline labels */}
+            <View style={styles.timelineLabels}>
+              <Text style={styles.timelineLabel}>1 week</Text>
+              <Text style={styles.timelineLabel}>4 weeks</Text>
+            </View>
+
+            {/* Graph placeholder */}
+            <View style={styles.graphContainer}>
+              <View style={styles.graphLine} />
+              <View style={styles.graphDots}>
+                {[10, 30, 50, 70, 90].map((left) => (
+                  <View key={left} style={[styles.graphDot, { left: `${left}%` }]} />
+                ))}
+              </View>
+              <View style={styles.lockOverlay}>
+                <Text style={styles.lockOverlayText}>Unlock your path</Text>
+              </View>
+            </View>
+          </View>
+
+          {/* Unlock message */}
+          <View style={styles.unlockMessage}>
+            <Ionicons name="lock-closed" size={14} color="#1F2937" />
+            <Text style={styles.unlockMessageText}>
+              Unlock your detailed skin report!
+            </Text>
+          </View>
+        </View>
+      </ScrollView>
+
+      {/* Bottom Section */}
+      <View style={[styles.bottomSection, { paddingBottom: insets.bottom + 16 }]}>
+        <Button
+          title="Unlock Full Routine"
+          onPress={handleUnlock}
+        />
+        <Text style={styles.disclaimer}>
+          Reveal your full skincare routine &{'\n'}detailed skin report.
+        </Text>
+      </View>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  gradient: {
-    flex: 1,
-  },
   container: {
     flex: 1,
+    backgroundColor: '#FAFAF8',
   },
   scrollView: {
     flex: 1,
   },
   scrollContent: {
     paddingHorizontal: 24,
-    paddingTop: 16,
     paddingBottom: 16,
   },
   header: {
@@ -158,35 +164,108 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   sparkle: {
-    fontSize: 20,
-    marginRight: 8,
+    fontSize: 24,
+    marginRight: 10,
   },
   title: {
-    fontSize: 26,
+    fontSize: isSmallDevice ? 26 : 30,
     fontWeight: '600',
-    color: '#3D3D3D',
+    color: '#1F2937',
+    letterSpacing: -0.5,
   },
   subtitle: {
-    fontSize: 14,
-    color: '#7A7A7A',
+    fontSize: 15,
+    color: '#6B7280',
     textAlign: 'center',
     marginBottom: 24,
+  },
+  routineCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(17, 24, 39, 0.08)',
+    padding: 16,
+    marginBottom: 14,
+  },
+  routineHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 14,
+  },
+  routineIconContainer: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    backgroundColor: 'rgba(17, 24, 39, 0.04)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+  routineIcon: {
+    fontSize: 18,
+  },
+  routineTitle: {
+    flex: 1,
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1F2937',
+  },
+  streakBadge: {
+    backgroundColor: 'rgba(17, 24, 39, 0.06)',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 10,
+  },
+  streakText: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#1F2937',
+  },
+  routineSteps: {
+    gap: 8,
+  },
+  stepRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(17, 24, 39, 0.03)',
+    borderRadius: 10,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+  },
+  stepNumber: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: '#1F2937',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+  stepNumberText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#FFFFFF',
+  },
+  stepName: {
+    flex: 1,
+    fontSize: 15,
+    color: '#1F2937',
   },
   progressSection: {
     marginTop: 8,
   },
   progressTitle: {
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: '600',
-    color: '#3D3D3D',
+    color: '#1F2937',
     marginBottom: 12,
   },
   timelineCard: {
-    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+    backgroundColor: '#FFFFFF',
     borderRadius: 16,
-    padding: 16,
     borderWidth: 1,
-    borderColor: '#F0EDEA',
+    borderColor: 'rgba(17, 24, 39, 0.08)',
+    padding: 16,
   },
   timelineHeader: {
     flexDirection: 'row',
@@ -195,9 +274,9 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   timelineTitle: {
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: '500',
-    color: '#3D3D3D',
+    color: '#1F2937',
   },
   timelineLabels: {
     flexDirection: 'row',
@@ -205,8 +284,8 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   timelineLabel: {
-    fontSize: 11,
-    color: '#A0A0A0',
+    fontSize: 12,
+    color: '#9CA3AF',
   },
   graphContainer: {
     height: 60,
@@ -217,6 +296,7 @@ const styles = StyleSheet.create({
     height: 3,
     borderRadius: 2,
     width: '100%',
+    backgroundColor: 'rgba(17, 24, 39, 0.08)',
   },
   graphDots: {
     position: 'absolute',
@@ -228,7 +308,7 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: '#C8D8D8',
+    backgroundColor: 'rgba(17, 24, 39, 0.15)',
     top: '50%',
     marginTop: -4,
   },
@@ -238,8 +318,8 @@ const styles = StyleSheet.create({
     bottom: 0,
   },
   lockOverlayText: {
-    fontSize: 10,
-    color: '#B0B0B0',
+    fontSize: 11,
+    color: '#9CA3AF',
     fontStyle: 'italic',
   },
   unlockMessage: {
@@ -247,36 +327,23 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 16,
+    gap: 6,
   },
   unlockMessageText: {
-    fontSize: 13,
-    color: '#7A9E9F',
-    marginLeft: 6,
+    fontSize: 14,
+    color: '#1F2937',
+    fontWeight: '500',
   },
   bottomSection: {
     alignItems: 'center',
     paddingHorizontal: 24,
     paddingTop: 12,
-    paddingBottom: 24,
-  },
-  unlockButton: {
-    width: '100%',
-    minWidth: 320,
-    paddingVertical: 16,
-    borderRadius: 30,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  unlockButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#FFFFFF',
   },
   disclaimer: {
-    fontSize: 12,
-    color: '#A0A0A0',
+    fontSize: 13,
+    color: '#9CA3AF',
     textAlign: 'center',
     marginTop: 12,
-    lineHeight: 18,
+    lineHeight: 20,
   },
 });

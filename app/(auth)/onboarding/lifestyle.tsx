@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions } from 'react-native';
 import { useRouter } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { OnboardingContainer } from '@/components/layout/OnboardingContainer';
-import { SegmentedControl } from '@/components/ui/SegmentedControl';
 import { Button } from '@/components/ui/Button';
+
+const { height: SCREEN_HEIGHT } = Dimensions.get('window');
+const isSmallDevice = SCREEN_HEIGHT < 700;
 
 const LIFESTYLE_QUESTIONS = [
   {
@@ -63,6 +66,7 @@ const LIFESTYLE_QUESTIONS = [
 
 export default function LifestyleScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const [answers, setAnswers] = useState<Record<string, string>>(() => {
     const defaults: Record<string, string> = {};
     LIFESTYLE_QUESTIONS.forEach((q) => {
@@ -76,7 +80,6 @@ export default function LifestyleScreen() {
   };
 
   const handleContinue = () => {
-    // TODO: Store lifestyle in context/state
     router.push('/(auth)/onboarding/sensitivities');
   };
 
@@ -98,18 +101,31 @@ export default function LifestyleScreen() {
           contentContainerStyle={styles.scrollContent}
         >
           {LIFESTYLE_QUESTIONS.map((question) => (
-            <SegmentedControl
-              key={question.id}
-              label={question.label}
-              options={question.options}
-              selectedId={answers[question.id]}
-              onSelect={(value) => updateAnswer(question.id, value)}
-            />
+            <View key={question.id} style={styles.questionSection}>
+              <Text style={styles.questionLabel}>{question.label}</Text>
+              <View style={styles.optionsRow}>
+                {question.options.map((option) => {
+                  const isSelected = answers[question.id] === option.id;
+                  return (
+                    <TouchableOpacity
+                      key={option.id}
+                      style={[styles.optionPill, isSelected && styles.optionPillSelected]}
+                      onPress={() => updateAnswer(question.id, option.id)}
+                      activeOpacity={0.7}
+                    >
+                      <Text style={[styles.optionText, isSelected && styles.optionTextSelected]}>
+                        {option.label}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+            </View>
           ))}
         </ScrollView>
 
         {/* Bottom Section */}
-        <View style={styles.bottomSection}>
+        <View style={[styles.bottomSection, { paddingBottom: insets.bottom + 16 }]}>
           <Button
             title="Continue"
             onPress={handleContinue}
@@ -129,34 +145,68 @@ const styles = StyleSheet.create({
   },
   titleContainer: {
     alignItems: 'center',
-    marginTop: 16,
-    marginBottom: 24,
+    paddingTop: isSmallDevice ? 12 : 20,
+    marginBottom: isSmallDevice ? 16 : 24,
   },
   title: {
-    fontSize: 26,
+    fontSize: isSmallDevice ? 26 : 30,
     fontWeight: '600',
-    color: '#3D3D3D',
+    color: '#1F2937',
     textAlign: 'center',
+    letterSpacing: -0.5,
   },
   subtitle: {
-    fontSize: 14,
-    color: '#7A7A7A',
+    fontSize: 15,
+    color: '#6B7280',
     marginTop: 8,
   },
   scrollView: {
     flex: 1,
   },
   scrollContent: {
-    paddingHorizontal: 4,
+    gap: isSmallDevice ? 18 : 22,
+    paddingBottom: 8,
+  },
+  questionSection: {
+    gap: 10,
+  },
+  questionLabel: {
+    fontSize: 15,
+    fontWeight: '500',
+    color: '#1F2937',
+  },
+  optionsRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  optionPill: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(17, 24, 39, 0.08)',
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+  },
+  optionPillSelected: {
+    backgroundColor: '#1F2937',
+    borderColor: '#1F2937',
+  },
+  optionText: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#1F2937',
+  },
+  optionTextSelected: {
+    color: '#FFFFFF',
   },
   bottomSection: {
     alignItems: 'center',
     paddingTop: 16,
-    paddingBottom: 32,
   },
   helperText: {
     fontSize: 13,
-    color: '#A0A0A0',
+    color: '#9CA3AF',
     marginTop: 16,
   },
 });

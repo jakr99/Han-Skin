@@ -1,15 +1,18 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions } from 'react-native';
 import { useRouter } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
 import { OnboardingContainer } from '@/components/layout/OnboardingContainer';
-import { RadioRow } from '@/components/ui/RadioRow';
-import { CheckboxPill } from '@/components/ui/CheckboxPill';
 import { Button } from '@/components/ui/Button';
+
+const { height: SCREEN_HEIGHT } = Dimensions.get('window');
+const isSmallDevice = SCREEN_HEIGHT < 700;
 
 const ROUTINE_OPTIONS = [
   { id: 'full', icon: '🧴', label: 'Yes, a full routine' },
-  { id: 'basics', icon: '🧴', label: 'A few basics' },
-  { id: 'not_yet', icon: '', label: 'Not yet' },
+  { id: 'basics', icon: '✨', label: 'A few basics' },
+  { id: 'not_yet', icon: '🌱', label: 'Not yet' },
 ];
 
 const PRODUCT_TYPES = [
@@ -21,6 +24,7 @@ const PRODUCT_TYPES = [
 
 export default function ProductsScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const [routineLevel, setRoutineLevel] = useState<string | null>(null);
   const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
 
@@ -34,7 +38,6 @@ export default function ProductsScreen() {
   };
 
   const handleContinue = () => {
-    // TODO: Store products in context/state
     router.push('/(auth)/onboarding/lifestyle');
   };
 
@@ -56,37 +59,58 @@ export default function ProductsScreen() {
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.scrollContent}
         >
-          {ROUTINE_OPTIONS.map((option) => (
-            <RadioRow
-              key={option.id}
-              icon={option.icon || undefined}
-              label={option.label}
-              selected={routineLevel === option.id}
-              onPress={() => setRoutineLevel(option.id)}
-            />
-          ))}
+          {ROUTINE_OPTIONS.map((option) => {
+            const isSelected = routineLevel === option.id;
+            return (
+              <TouchableOpacity
+                key={option.id}
+                style={[styles.optionCard, isSelected && styles.optionCardSelected]}
+                onPress={() => setRoutineLevel(option.id)}
+                activeOpacity={0.7}
+              >
+                <View style={styles.optionIconContainer}>
+                  <Text style={styles.optionIcon}>{option.icon}</Text>
+                </View>
+                <Text style={[styles.optionLabel, isSelected && styles.optionLabelSelected]}>
+                  {option.label}
+                </Text>
+                <View style={[styles.radio, isSelected && styles.radioSelected]}>
+                  {isSelected && <View style={styles.radioInner} />}
+                </View>
+              </TouchableOpacity>
+            );
+          })}
 
           {/* Product Types */}
           {showProductTypes && (
             <View style={styles.productSection}>
               <Text style={styles.sectionTitle}>Which products do you use?</Text>
               <View style={styles.productGrid}>
-                {PRODUCT_TYPES.map((product) => (
-                  <View key={product.id} style={styles.productItem}>
-                    <CheckboxPill
-                      label={product.label}
-                      selected={selectedProducts.includes(product.id)}
+                {PRODUCT_TYPES.map((product) => {
+                  const isSelected = selectedProducts.includes(product.id);
+                  return (
+                    <TouchableOpacity
+                      key={product.id}
+                      style={[styles.productPill, isSelected && styles.productPillSelected]}
                       onPress={() => toggleProduct(product.id)}
-                    />
-                  </View>
-                ))}
+                      activeOpacity={0.7}
+                    >
+                      <Text style={[styles.productLabel, isSelected && styles.productLabelSelected]}>
+                        {product.label}
+                      </Text>
+                      {isSelected && (
+                        <Ionicons name="checkmark" size={16} color="#FFFFFF" style={styles.productCheck} />
+                      )}
+                    </TouchableOpacity>
+                  );
+                })}
               </View>
             </View>
           )}
         </ScrollView>
 
         {/* Bottom Section */}
-        <View style={styles.bottomSection}>
+        <View style={[styles.bottomSection, { paddingBottom: insets.bottom + 16 }]}>
           <Button
             title="Continue"
             onPress={handleContinue}
@@ -107,22 +131,76 @@ const styles = StyleSheet.create({
   },
   titleContainer: {
     alignItems: 'center',
-    marginTop: 24,
-    marginBottom: 24,
+    paddingTop: isSmallDevice ? 16 : 24,
+    marginBottom: isSmallDevice ? 20 : 28,
   },
   title: {
-    fontSize: 26,
+    fontSize: isSmallDevice ? 26 : 30,
     fontWeight: '600',
     color: '#1F2937',
     textAlign: 'center',
-    lineHeight: 34,
-    letterSpacing: -0.3,
+    lineHeight: isSmallDevice ? 32 : 38,
+    letterSpacing: -0.5,
   },
   scrollView: {
     flex: 1,
   },
   scrollContent: {
-    paddingHorizontal: 4,
+    gap: 10,
+  },
+  optionCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: 'rgba(17, 24, 39, 0.08)',
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+  },
+  optionCardSelected: {
+    borderColor: '#1F2937',
+    borderWidth: 2,
+    backgroundColor: 'rgba(17, 24, 39, 0.02)',
+  },
+  optionIconContainer: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    backgroundColor: 'rgba(17, 24, 39, 0.04)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 14,
+  },
+  optionIcon: {
+    fontSize: 22,
+  },
+  optionLabel: {
+    flex: 1,
+    fontSize: 16,
+    fontWeight: '500',
+    color: '#1F2937',
+  },
+  optionLabelSelected: {
+    fontWeight: '600',
+  },
+  radio: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    borderWidth: 2,
+    borderColor: 'rgba(17, 24, 39, 0.15)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  radioSelected: {
+    borderColor: '#1F2937',
+  },
+  radioInner: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: '#1F2937',
   },
   productSection: {
     marginTop: 24,
@@ -131,20 +209,41 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '500',
     color: '#6B7280',
-    marginBottom: 16,
+    marginBottom: 14,
   },
   productGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 10,
   },
-  productItem: {
-    width: '48%',
+  productPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(17, 24, 39, 0.08)',
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+  },
+  productPillSelected: {
+    backgroundColor: '#1F2937',
+    borderColor: '#1F2937',
+  },
+  productLabel: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#1F2937',
+  },
+  productLabelSelected: {
+    color: '#FFFFFF',
+  },
+  productCheck: {
+    marginLeft: 6,
   },
   bottomSection: {
     alignItems: 'center',
     paddingTop: 16,
-    paddingBottom: 40,
   },
   helperText: {
     fontSize: 13,
