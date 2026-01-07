@@ -7,11 +7,11 @@ import {
   TouchableOpacity,
   Image,
   ActivityIndicator,
+  StatusBar,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
 import { analyzeProduct } from '@/services/barcodeService';
 import { useUserProfile, MOCK_USER_PROFILE } from '@/context/UserProfileContext';
 import type { ScannedProduct, ProductScore, IngredientAnalysis } from '@/types/scanner';
@@ -92,12 +92,9 @@ export default function ScanResultScreen() {
   if (loading) {
     return (
       <View style={styles.container}>
-        <LinearGradient
-          colors={['#FFF8F0', '#FFF5EB', '#FEF0E8', '#FCE8E0']}
-          style={StyleSheet.absoluteFillObject}
-        />
+        <StatusBar barStyle="dark-content" />
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#7A9E9F" />
+          <ActivityIndicator size="large" color="#1F2937" />
           <Text style={styles.loadingText}>Analyzing ingredients...</Text>
         </View>
       </View>
@@ -108,17 +105,18 @@ export default function ScanResultScreen() {
   if (!found || !ingredientsText) {
     return (
       <View style={styles.container}>
-        <LinearGradient
-          colors={['#FFF8F0', '#FFF5EB', '#FEF0E8', '#FCE8E0']}
-          style={StyleSheet.absoluteFillObject}
-        />
+        <StatusBar barStyle="dark-content" />
 
-        <View style={[styles.header, { paddingTop: insets.top + 10 }]}>
-          <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-            <Ionicons name="arrow-back" size={24} color="#1F2937" />
+        <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
+          <TouchableOpacity
+            style={styles.backButton}
+            onPress={() => router.back()}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          >
+            <Ionicons name="chevron-back" size={28} color="#1F2937" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Product Not Found</Text>
-          <View style={{ width: 40 }} />
+          <View style={styles.headerSpacer} />
         </View>
 
         <View style={styles.notFoundContainer}>
@@ -182,17 +180,18 @@ export default function ScanResultScreen() {
   // Main result view
   return (
     <View style={styles.container}>
-      <LinearGradient
-        colors={['#FFF8F0', '#FFF5EB', '#FEF0E8', '#FCE8E0']}
-        style={StyleSheet.absoluteFillObject}
-      />
+      <StatusBar barStyle="dark-content" />
 
-      <View style={[styles.header, { paddingTop: insets.top + 10 }]}>
-        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-          <Ionicons name="arrow-back" size={24} color="#1F2937" />
+      <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => router.back()}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+        >
+          <Ionicons name="chevron-back" size={28} color="#1F2937" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Analysis Result</Text>
-        <View style={{ width: 40 }} />
+        <View style={styles.headerSpacer} />
       </View>
 
       <ScrollView
@@ -331,14 +330,13 @@ export default function ScanResultScreen() {
         )}
 
         {/* Scan Again Button */}
-        <TouchableOpacity style={styles.scanAgainButtonPrimary} onPress={() => router.back()}>
-          <LinearGradient
-            colors={['#A8C5C6', '#7A9E9F']}
-            style={styles.scanAgainGradient}
-          >
-            <Ionicons name="barcode-outline" size={20} color="#FFFFFF" />
-            <Text style={styles.scanAgainButtonText}>Scan Another Product</Text>
-          </LinearGradient>
+        <TouchableOpacity
+          style={styles.scanAgainButtonPrimary}
+          onPress={() => router.back()}
+          activeOpacity={0.9}
+        >
+          <Ionicons name="barcode-outline" size={20} color="#FFFFFF" />
+          <Text style={styles.scanAgainButtonText}>Scan Another Product</Text>
         </TouchableOpacity>
 
         <View style={{ height: insets.bottom + 20 }} />
@@ -375,6 +373,7 @@ function IngredientPill({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#FAFAF8',
   },
   header: {
     flexDirection: 'row',
@@ -384,8 +383,8 @@ const styles = StyleSheet.create({
     paddingBottom: 16,
   },
   backButton: {
-    width: 40,
-    height: 40,
+    width: 44,
+    height: 44,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -394,11 +393,14 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#1F2937',
   },
+  headerSpacer: {
+    width: 44,
+  },
   scrollView: {
     flex: 1,
   },
   scrollContent: {
-    paddingHorizontal: 20,
+    paddingHorizontal: 24,
   },
 
   // Loading
@@ -421,19 +423,19 @@ const styles = StyleSheet.create({
     padding: 16,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: '#E5E2DE',
+    borderColor: 'rgba(17, 24, 39, 0.08)',
   },
   productImage: {
     width: 80,
     height: 80,
     borderRadius: 12,
-    backgroundColor: '#F3F4F6',
+    backgroundColor: 'rgba(17, 24, 39, 0.04)',
   },
   productImagePlaceholder: {
     width: 80,
     height: 80,
     borderRadius: 12,
-    backgroundColor: '#F3F4F6',
+    backgroundColor: 'rgba(17, 24, 39, 0.04)',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -497,7 +499,7 @@ const styles = StyleSheet.create({
     padding: 16,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: '#E5E2DE',
+    borderColor: 'rgba(17, 24, 39, 0.08)',
   },
   reasonItem: {
     flexDirection: 'row',
@@ -526,7 +528,7 @@ const styles = StyleSheet.create({
     padding: 16,
     marginBottom: 12,
     borderWidth: 1,
-    borderColor: '#E5E2DE',
+    borderColor: 'rgba(17, 24, 39, 0.08)',
   },
   sectionHeader: {
     flexDirection: 'row',
@@ -550,7 +552,7 @@ const styles = StyleSheet.create({
   sectionCount: {
     fontSize: 14,
     color: '#6B7280',
-    backgroundColor: '#F3F4F6',
+    backgroundColor: 'rgba(17, 24, 39, 0.04)',
     paddingHorizontal: 8,
     paddingVertical: 2,
     borderRadius: 10,
@@ -573,7 +575,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 16,
-    backgroundColor: '#F3F4F6',
+    backgroundColor: 'rgba(17, 24, 39, 0.04)',
   },
   morePillText: {
     fontSize: 13,
@@ -590,7 +592,7 @@ const styles = StyleSheet.create({
     padding: 16,
     marginBottom: 8,
     borderWidth: 1,
-    borderColor: '#E5E2DE',
+    borderColor: 'rgba(17, 24, 39, 0.08)',
   },
   fullIngredientsTitle: {
     fontSize: 16,
@@ -603,7 +605,7 @@ const styles = StyleSheet.create({
     padding: 16,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: '#E5E2DE',
+    borderColor: 'rgba(17, 24, 39, 0.08)',
   },
   fullIngredientsText: {
     fontSize: 13,
@@ -622,7 +624,7 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: '#F3F4F6',
+    backgroundColor: 'rgba(17, 24, 39, 0.04)',
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 20,
@@ -658,7 +660,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 16,
     borderWidth: 1,
-    borderColor: '#E5E2DE',
+    borderColor: 'rgba(17, 24, 39, 0.08)',
   },
   fallbackButtonDisabled: {
     opacity: 0.6,
@@ -682,25 +684,29 @@ const styles = StyleSheet.create({
   },
   scanAgainText: {
     fontSize: 16,
-    color: '#7A9E9F',
+    color: '#6B7280',
     fontWeight: '600',
   },
 
   // Scan Again Primary
   scanAgainButtonPrimary: {
-    marginTop: 8,
-    marginBottom: 16,
-  },
-  scanAgainGradient: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
+    backgroundColor: '#111111',
     paddingVertical: 16,
-    borderRadius: 28,
+    borderRadius: 18,
+    marginTop: 8,
+    marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.10,
+    shadowRadius: 20,
+    elevation: 4,
   },
   scanAgainButtonText: {
-    fontSize: 16,
+    fontSize: 17,
     fontWeight: '600',
     color: '#FFFFFF',
   },

@@ -4,6 +4,7 @@ import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { OnboardingContainer } from '@/components/layout/OnboardingContainer';
 import { Button } from '@/components/ui/Button';
+import { useOnboarding } from '@/context/OnboardingContext';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 const isSmallDevice = SCREEN_HEIGHT < 700;
@@ -67,7 +68,12 @@ const LIFESTYLE_QUESTIONS = [
 export default function LifestyleScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { data, setLifestyle } = useOnboarding();
   const [answers, setAnswers] = useState<Record<string, string>>(() => {
+    // Use saved data if available, otherwise use defaults
+    if (data.lifestyle.outdoor !== 'rarely' || data.lifestyle.climate !== 'dry') {
+      return { ...data.lifestyle };
+    }
     const defaults: Record<string, string> = {};
     LIFESTYLE_QUESTIONS.forEach((q) => {
       defaults[q.id] = q.default;
@@ -80,6 +86,13 @@ export default function LifestyleScreen() {
   };
 
   const handleContinue = () => {
+    setLifestyle({
+      outdoor: answers.outdoor,
+      exercise: answers.exercise,
+      climate: answers.climate,
+      makeup: answers.makeup,
+      pollution: answers.pollution,
+    });
     router.push('/(auth)/onboarding/sensitivities');
   };
 

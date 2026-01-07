@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { OnboardingContainer } from '@/components/layout/OnboardingContainer';
 import { Button } from '@/components/ui/Button';
+import { useOnboarding } from '@/context/OnboardingContext';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 const isSmallDevice = SCREEN_HEIGHT < 700;
@@ -22,7 +23,8 @@ const MAX_SELECTIONS = 2;
 export default function GoalsScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const [selectedGoals, setSelectedGoals] = useState<string[]>([]);
+  const { data, setGoals } = useOnboarding();
+  const [selectedGoals, setSelectedGoals] = useState<string[]>(data.goals);
 
   const toggleGoal = (goalId: string) => {
     setSelectedGoals((prev) => {
@@ -37,6 +39,7 @@ export default function GoalsScreen() {
   };
 
   const handleContinue = () => {
+    setGoals(selectedGoals);
     router.push('/(auth)/onboarding/concerns');
   };
 

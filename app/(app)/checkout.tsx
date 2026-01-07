@@ -5,12 +5,11 @@ import {
   ScrollView,
   TouchableOpacity,
   StyleSheet,
-  Image,
+  StatusBar,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
 
 const CART_ITEMS = [
   {
@@ -57,17 +56,16 @@ export default function CheckoutScreen() {
 
   return (
     <View style={styles.container}>
-      <LinearGradient
-        colors={['#FFF8F0', '#FFF5EB', '#FEF0E8', '#FCE8E0']}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        style={StyleSheet.absoluteFillObject}
-      />
+      <StatusBar barStyle="dark-content" />
 
       {/* Header */}
-      <View style={[styles.header, { paddingTop: insets.top + 10 }]}>
-        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-          <Ionicons name="arrow-back" size={24} color="#1F2937" />
+      <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => router.back()}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+        >
+          <Ionicons name="chevron-back" size={28} color="#1F2937" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Checkout</Text>
         <View style={styles.placeholder} />
@@ -213,19 +211,14 @@ export default function CheckoutScreen() {
 
       {/* Bottom Checkout Button */}
       {items.length > 0 && (
-        <View style={[styles.bottomBar, { paddingBottom: insets.bottom + 10 }]}>
+        <View style={[styles.bottomBar, { paddingBottom: insets.bottom + 16 }]}>
           <View style={styles.bottomTotal}>
             <Text style={styles.bottomTotalLabel}>Total</Text>
             <Text style={styles.bottomTotalValue}>${total.toFixed(2)}</Text>
           </View>
-          <TouchableOpacity style={styles.checkoutButton}>
-            <LinearGradient
-              colors={['#A8C5C6', '#7A9E9F']}
-              style={styles.checkoutButtonGradient}
-            >
-              <Text style={styles.checkoutButtonText}>Continue to Shipping</Text>
-              <Ionicons name="arrow-forward" size={20} color="#FFFFFF" />
-            </LinearGradient>
+          <TouchableOpacity style={styles.checkoutButton} activeOpacity={0.9}>
+            <Text style={styles.checkoutButtonText}>Continue to Shipping</Text>
+            <Ionicons name="arrow-forward" size={20} color="#FFFFFF" />
           </TouchableOpacity>
         </View>
       )}
@@ -236,16 +229,20 @@ export default function CheckoutScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#FAFAF8',
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 20,
+    paddingHorizontal: 16,
     paddingBottom: 16,
   },
   backButton: {
-    padding: 4,
+    width: 44,
+    height: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   headerTitle: {
     fontSize: 18,
@@ -253,7 +250,7 @@ const styles = StyleSheet.create({
     color: '#1F2937',
   },
   placeholder: {
-    width: 32,
+    width: 44,
   },
   progressContainer: {
     flexDirection: 'row',
@@ -269,13 +266,13 @@ const styles = StyleSheet.create({
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: '#E5E7EB',
+    backgroundColor: 'rgba(17, 24, 39, 0.08)',
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 4,
   },
   stepActive: {
-    backgroundColor: '#7A9E9F',
+    backgroundColor: '#111111',
   },
   stepNumber: {
     fontSize: 12,
@@ -293,21 +290,21 @@ const styles = StyleSheet.create({
   },
   stepLabelActive: {
     fontSize: 11,
-    color: '#7A9E9F',
+    color: '#1F2937',
     fontWeight: '500',
   },
   progressLine: {
     width: 40,
     height: 2,
-    backgroundColor: '#E5E7EB',
+    backgroundColor: 'rgba(17, 24, 39, 0.08)',
     marginHorizontal: 8,
     marginBottom: 18,
   },
   lineActive: {
-    backgroundColor: '#7A9E9F',
+    backgroundColor: '#111111',
   },
   scrollContent: {
-    paddingHorizontal: 20,
+    paddingHorizontal: 24,
   },
   sectionTitle: {
     fontSize: 16,
@@ -328,8 +325,8 @@ const styles = StyleSheet.create({
   continueShoppingButton: {
     paddingVertical: 12,
     paddingHorizontal: 24,
-    backgroundColor: '#7A9E9F',
-    borderRadius: 20,
+    backgroundColor: '#111111',
+    borderRadius: 14,
   },
   continueShoppingText: {
     fontSize: 14,
@@ -344,13 +341,13 @@ const styles = StyleSheet.create({
     padding: 14,
     marginBottom: 12,
     borderWidth: 1,
-    borderColor: '#E5E2DE',
+    borderColor: 'rgba(17, 24, 39, 0.08)',
   },
   itemImage: {
     width: 60,
     height: 60,
     borderRadius: 12,
-    backgroundColor: 'rgba(122, 158, 159, 0.1)',
+    backgroundColor: 'rgba(17, 24, 39, 0.04)',
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12,
@@ -404,7 +401,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(122, 158, 159, 0.1)',
+    backgroundColor: 'rgba(16, 185, 129, 0.08)',
     borderRadius: 12,
     padding: 12,
     marginBottom: 16,
@@ -412,7 +409,7 @@ const styles = StyleSheet.create({
   },
   shippingBannerText: {
     fontSize: 13,
-    color: '#7A9E9F',
+    color: '#059669',
     fontWeight: '500',
   },
   summaryCard: {
@@ -421,7 +418,7 @@ const styles = StyleSheet.create({
     padding: 18,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: '#E5E2DE',
+    borderColor: 'rgba(17, 24, 39, 0.08)',
   },
   summaryTitle: {
     fontSize: 15,
@@ -449,7 +446,7 @@ const styles = StyleSheet.create({
   },
   divider: {
     height: 1,
-    backgroundColor: '#E5E7EB',
+    backgroundColor: 'rgba(17, 24, 39, 0.08)',
     marginVertical: 12,
   },
   totalLabel: {
@@ -482,10 +479,10 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#FAFAF8',
     borderTopWidth: 1,
-    borderTopColor: '#E5E2DE',
-    paddingHorizontal: 20,
+    borderTopColor: 'rgba(17, 24, 39, 0.08)',
+    paddingHorizontal: 24,
     paddingTop: 16,
   },
   bottomTotal: {
@@ -505,17 +502,21 @@ const styles = StyleSheet.create({
   },
   checkoutButton: {
     width: '100%',
-  },
-  checkoutButtonGradient: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: '#111111',
     paddingVertical: 16,
-    borderRadius: 28,
+    borderRadius: 18,
     gap: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.10,
+    shadowRadius: 20,
+    elevation: 4,
   },
   checkoutButtonText: {
-    fontSize: 16,
+    fontSize: 17,
     fontWeight: '600',
     color: '#FFFFFF',
   },

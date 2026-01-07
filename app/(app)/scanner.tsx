@@ -207,7 +207,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   statusText: {
-    color: '#7A9E9F',
+    color: '#FFFFFF',
     fontSize: 14,
     fontWeight: '500',
   },
@@ -273,10 +273,10 @@ const styles = StyleSheet.create({
   nativeScanBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#7A9E9F',
+    backgroundColor: '#111111',
     paddingHorizontal: 20,
     paddingVertical: 12,
-    borderRadius: 25,
+    borderRadius: 16,
     gap: 8,
   },
   nativeScanText: {

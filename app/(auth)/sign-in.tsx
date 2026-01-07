@@ -155,14 +155,6 @@ export default function SignInScreen() {
         <Text style={styles.legal}>
           By continuing, you agree to our Terms & Privacy Policy.
         </Text>
-
-        {/* Dev Bypass - Remove in production */}
-        <TouchableOpacity
-          onPress={() => router.replace('/(app)')}
-          style={styles.devButton}
-        >
-          <Text style={styles.devButtonText}>Skip to Home (Dev)</Text>
-        </TouchableOpacity>
       </View>
     </View>
   );
@@ -294,20 +286,5 @@ const styles = StyleSheet.create({
     color: 'rgba(17, 24, 39, 0.45)',
     textAlign: 'center',
     marginTop: 14,
-  },
-
-  // Dev button
-  devButton: {
-    marginTop: 16,
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    backgroundColor: '#FF6B6B',
-    borderRadius: 8,
-    alignSelf: 'center',
-  },
-  devButtonText: {
-    color: '#FFFFFF',
-    fontSize: 13,
-    fontWeight: '600',
   },
 });

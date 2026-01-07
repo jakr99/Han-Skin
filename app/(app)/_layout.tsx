@@ -105,6 +105,12 @@ export default function AppLayout() {
           href: null,
         }}
       />
+      <Tabs.Screen
+        name="product"
+        options={{
+          href: null,
+        }}
+      />
     </Tabs>
   );
 }

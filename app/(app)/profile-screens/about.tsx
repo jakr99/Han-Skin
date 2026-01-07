@@ -8,8 +8,8 @@ const COLORS = {
   primaryText: '#1F2937',
   secondaryText: '#6B7280',
   tertiaryText: '#9CA3AF',
-  accent: '#D4A574',
-  border: '#E8E4DF',
+  accent: '#1F2937',
+  border: 'rgba(17, 24, 39, 0.08)',
 };
 
 export default function AboutScreen() {
@@ -76,7 +76,7 @@ export default function AboutScreen() {
 const styles = StyleSheet.create({
   appInfoCard: {
     backgroundColor: COLORS.card,
-    borderRadius: 12,
+    borderRadius: 14,
     padding: 24,
     borderWidth: 1,
     borderColor: COLORS.border,
@@ -87,7 +87,7 @@ const styles = StyleSheet.create({
     width: 64,
     height: 64,
     borderRadius: 16,
-    backgroundColor: '#FEF3E6',
+    backgroundColor: 'rgba(17, 24, 39, 0.04)',
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 12,
@@ -119,7 +119,7 @@ const styles = StyleSheet.create({
   },
   card: {
     backgroundColor: COLORS.card,
-    borderRadius: 12,
+    borderRadius: 14,
     borderWidth: 1,
     borderColor: COLORS.border,
     overflow: 'hidden',

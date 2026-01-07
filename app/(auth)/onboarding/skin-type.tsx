@@ -4,6 +4,7 @@ import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { OnboardingContainer } from '@/components/layout/OnboardingContainer';
 import { Button } from '@/components/ui/Button';
+import { useOnboarding } from '@/context/OnboardingContext';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 const isSmallDevice = SCREEN_HEIGHT < 700;
@@ -19,9 +20,13 @@ const SKIN_TYPES = [
 export default function SkinTypeScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const [selectedType, setSelectedType] = useState<string | null>(null);
+  const { data, setSkinType } = useOnboarding();
+  const [selectedType, setSelectedType] = useState<string | null>(data.skinType);
 
   const handleContinue = () => {
+    if (selectedType) {
+      setSkinType(selectedType);
+    }
     router.push('/(auth)/onboarding/products');
   };
 

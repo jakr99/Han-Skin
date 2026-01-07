@@ -2,176 +2,169 @@ import React from 'react';
 import {
   View,
   Text,
+  StyleSheet,
   ScrollView,
   TouchableOpacity,
-  StyleSheet,
-  Image,
+  StatusBar,
+  Dimensions,
 } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
 import { useAuth } from '@/context/AuthContext';
 
+const { height: SCREEN_HEIGHT } = Dimensions.get('window');
+const isSmallDevice = SCREEN_HEIGHT < 700;
+
+const QUICK_ACTIONS = [
+  { id: 'scan', icon: 'scan-outline', label: 'Scan Product', route: '/(app)/barcode' },
+  { id: 'routine', icon: 'sunny-outline', label: 'My Routine', route: '/(app)/routine' },
+  { id: 'shop', icon: 'bag-outline', label: 'Shop', route: '/(app)/shop' },
+];
+
+const MORNING_ROUTINE = [
+  { step: 1, name: 'Cleanser', done: true },
+  { step: 2, name: 'Toner', done: true },
+  { step: 3, name: 'Serum', done: false },
+  { step: 4, name: 'Moisturizer', done: false },
+  { step: 5, name: 'SPF', done: false },
+];
+
 export default function HomeScreen() {
-  const insets = useSafeAreaInsets();
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const { user } = useAuth();
 
   const currentHour = new Date().getHours();
   const greeting = currentHour < 12 ? 'Good morning' : currentHour < 18 ? 'Good afternoon' : 'Good evening';
 
-  // Get user's first name from metadata or email
   const firstName = user?.user_metadata?.first_name
     || user?.email?.split('@')[0]
     || 'there';
 
+  const completedSteps = MORNING_ROUTINE.filter(s => s.done).length;
+  const totalSteps = MORNING_ROUTINE.length;
+  const progressPercent = (completedSteps / totalSteps) * 100;
+
   return (
     <View style={styles.container}>
-      <LinearGradient
-        colors={['#FFF8F0', '#FFF5EB', '#FEF0E8', '#FCE8E0']}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        style={StyleSheet.absoluteFillObject}
-      />
+      <StatusBar barStyle="dark-content" />
 
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={[styles.scrollContent, { paddingTop: insets.top + 10 }]}
+        contentContainerStyle={[styles.scrollContent, { paddingTop: insets.top + 16 }]}
       >
         {/* Header */}
         <View style={styles.header}>
           <View>
-            <View style={styles.greetingRow}>
-              <Text style={styles.greeting}>{greeting}, {firstName} </Text>
-              <Text style={styles.waveEmoji}>👋</Text>
-            </View>
-            <Text style={styles.subtitle}>Here's your skincare plan for today.</Text>
+            <Text style={styles.greeting}>{greeting}, {firstName}</Text>
+            <Text style={styles.subtitle}>Ready for your routine?</Text>
           </View>
-          <TouchableOpacity style={styles.profileButton} onPress={() => router.push('/profile')}>
-            <View style={styles.profileImage}>
-              <Ionicons name="person" size={24} color="#D4A574" />
-            </View>
+          <TouchableOpacity
+            style={styles.profileButton}
+            onPress={() => router.push('/(app)/profile')}
+          >
+            <Ionicons name="person" size={20} color="#1F2937" />
           </TouchableOpacity>
         </View>
 
-        {/* Morning Routine Card */}
-        <View style={styles.routineCard}>
-          <View style={styles.routineCardContent}>
-            <View style={styles.routineCardLeft}>
-              <Text style={styles.routineCardTitle}>Start Your Morning Routine</Text>
-              <View style={styles.stepsRow}>
-                <Text style={styles.stepsText}>3 steps to boost radiance </Text>
-                <Text style={styles.sparkle}>✨</Text>
+        {/* Today's Progress Card */}
+        <View style={styles.progressCard}>
+          <View style={styles.progressHeader}>
+            <View style={styles.progressTitleRow}>
+              <View style={styles.sunIcon}>
+                <Ionicons name="sunny" size={18} color="#F59E0B" />
               </View>
-              <TouchableOpacity
-                style={styles.beginButton}
-                onPress={() => router.push('/routine')}
-              >
-                <Text style={styles.beginButtonText}>Begin Routine </Text>
-                <Ionicons name="chevron-forward" size={14} color="#5C5C5C" />
-              </TouchableOpacity>
-              <Text style={styles.progressText}>3 out of 5 steps completed</Text>
+              <Text style={styles.progressTitle}>Morning Routine</Text>
             </View>
-            <View style={styles.routineCardRight}>
-              <View style={styles.productImages}>
-                <View style={[styles.productCircle, { backgroundColor: '#F5EFE6' }]}>
-                  <Ionicons name="flask-outline" size={20} color="#D4A574" />
-                </View>
-                <View style={[styles.productCircle, { backgroundColor: '#E8F4F0', marginLeft: -10 }]}>
-                  <Ionicons name="water-outline" size={20} color="#7A9E9F" />
-                </View>
-              </View>
+            <View style={styles.streakBadge}>
+              <Text style={styles.streakText}>4 day streak</Text>
             </View>
           </View>
-        </View>
 
-        {/* Log Today's Skin Button */}
-        <TouchableOpacity style={styles.logSkinButton} onPress={() => router.push('/scan')}>
-          <Ionicons name="happy-outline" size={20} color="#6B7280" />
-          <Text style={styles.logSkinText}>Log Today's Skin</Text>
-          <Ionicons name="chevron-forward" size={18} color="#9CA3AF" />
-        </TouchableOpacity>
+          <View style={styles.progressBarContainer}>
+            <View style={styles.progressBarBg}>
+              <View style={[styles.progressBarFill, { width: `${progressPercent}%` }]} />
+            </View>
+            <Text style={styles.progressText}>{completedSteps} of {totalSteps} steps</Text>
+          </View>
+
+          <View style={styles.stepsContainer}>
+            {MORNING_ROUTINE.map((item) => (
+              <TouchableOpacity
+                key={item.step}
+                style={[styles.stepItem, item.done && styles.stepItemDone]}
+              >
+                <View style={[styles.stepCheck, item.done && styles.stepCheckDone]}>
+                  {item.done && <Ionicons name="checkmark" size={14} color="#FFFFFF" />}
+                </View>
+                <Text style={[styles.stepName, item.done && styles.stepNameDone]}>
+                  {item.name}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+
+          <TouchableOpacity
+            style={styles.continueButton}
+            onPress={() => router.push('/(app)/routine')}
+            activeOpacity={0.9}
+          >
+            <Text style={styles.continueButtonText}>Continue Routine</Text>
+            <Ionicons name="arrow-forward" size={18} color="#FFFFFF" />
+          </TouchableOpacity>
+        </View>
 
         {/* Quick Actions */}
+        <Text style={styles.sectionTitle}>Quick Actions</Text>
         <View style={styles.quickActions}>
-          <TouchableOpacity style={styles.actionItem} onPress={() => router.push('/routine')}>
-            <View style={[styles.actionIcon, { backgroundColor: '#FEF3E2' }]}>
-              <Ionicons name="water" size={24} color="#E8B86D" />
-            </View>
-            <Text style={styles.actionTitle}>Routine</Text>
-            <Text style={styles.actionSubtitle}>View your{'\n'}AM/PM steps</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.actionItem} onPress={() => router.push('/barcode')}>
-            <View style={[styles.actionIcon, { backgroundColor: '#E8F4F8' }]}>
-              <Ionicons name="scan-outline" size={24} color="#7BA3A8" />
-            </View>
-            <Text style={styles.actionTitle}>Scan</Text>
-            <Text style={styles.actionSubtitle}>Check product{'\n'}by barcode</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.actionItem} onPress={() => router.push('/scan')}>
-            <View style={[styles.actionIcon, { backgroundColor: '#FFF8E7' }]}>
-              <Ionicons name="sparkles" size={24} color="#E8C547" />
-            </View>
-            <Text style={styles.actionTitle}>Analyze</Text>
-            <Text style={styles.actionSubtitle}>Update your{'\n'}skin reading</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.actionItem} onPress={() => router.push('/shop')}>
-            <View style={[styles.actionIcon, { backgroundColor: '#FEF0F0' }]}>
-              <Ionicons name="gift" size={24} color="#E8A4A4" />
-            </View>
-            <Text style={styles.actionTitle}>Top Picks</Text>
-            <Text style={styles.actionSubtitle}>Products</Text>
-          </TouchableOpacity>
+          {QUICK_ACTIONS.map((action) => (
+            <TouchableOpacity
+              key={action.id}
+              style={styles.actionCard}
+              onPress={() => router.push(action.route as any)}
+              activeOpacity={0.7}
+            >
+              <View style={styles.actionIcon}>
+                <Ionicons name={action.icon as any} size={24} color="#1F2937" />
+              </View>
+              <Text style={styles.actionLabel}>{action.label}</Text>
+            </TouchableOpacity>
+          ))}
         </View>
 
-        {/* Today's Top Picks */}
-        <View style={styles.topPicksSection}>
-          <Text style={styles.sectionTitle}>Today's Top Picks</Text>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.productsScroll}
-          >
-            {/* Product 1 */}
-            <View style={styles.productCard}>
-              <View style={styles.bestSellerBadge}>
-                <Text style={styles.bestSellerText}>Best Seller</Text>
-              </View>
-              <View style={styles.productImagePlaceholder}>
-                <Ionicons name="flask" size={40} color="#E8A86D" />
-              </View>
-              <Text style={styles.productBrand}>COSRX</Text>
-              <Text style={styles.productName}>The Vitamin C 13 Serum</Text>
-              <Text style={styles.productPrice}>$21.00</Text>
-              <Text style={styles.productDescription}>Brightens & evens skin tone</Text>
-            </View>
+        {/* Skin Tip Card */}
+        <View style={styles.tipCard}>
+          <View style={styles.tipIcon}>
+            <Ionicons name="bulb-outline" size={20} color="#1F2937" />
+          </View>
+          <View style={styles.tipContent}>
+            <Text style={styles.tipTitle}>Daily Tip</Text>
+            <Text style={styles.tipText}>
+              Apply your products from thinnest to thickest consistency for best absorption.
+            </Text>
+          </View>
+        </View>
 
-            {/* Product 2 */}
-            <View style={styles.productCard}>
-              <View style={styles.productImagePlaceholder}>
-                <Ionicons name="leaf" size={40} color="#7A9E9F" />
-              </View>
-              <Text style={styles.productBrand}>Anua</Text>
-              <Text style={styles.productName}>Heartleaf 77% Toner</Text>
-              <Text style={styles.productPrice}>$20.00</Text>
-              <Text style={styles.productDescription}>Calms & hydrates sensitive skin</Text>
-            </View>
+        {/* Recent Scans */}
+        <View style={styles.recentSection}>
+          <View style={styles.recentHeader}>
+            <Text style={styles.sectionTitle}>Recent Scans</Text>
+            <TouchableOpacity>
+              <Text style={styles.seeAllText}>See all</Text>
+            </TouchableOpacity>
+          </View>
 
-            {/* Product 3 */}
-            <View style={styles.productCard}>
-              <View style={styles.productImagePlaceholder}>
-                <Ionicons name="sunny" size={40} color="#E8C547" />
-              </View>
-              <Text style={styles.productBrand}>Beauty of Joseon</Text>
-              <Text style={styles.productName}>Relief Sun SPF50+</Text>
-              <Text style={styles.productPrice}>$18.00</Text>
-              <Text style={styles.productDescription}>Lightweight daily protection</Text>
-            </View>
-          </ScrollView>
+          <View style={styles.emptyScans}>
+            <Ionicons name="scan-outline" size={32} color="#D1D5DB" />
+            <Text style={styles.emptyText}>No recent scans</Text>
+            <TouchableOpacity
+              style={styles.scanButton}
+              onPress={() => router.push('/(app)/barcode')}
+            >
+              <Text style={styles.scanButtonText}>Scan a product</Text>
+            </TouchableOpacity>
+          </View>
         </View>
 
         <View style={{ height: 100 }} />
@@ -183,233 +176,261 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#FAFAF8',
   },
   scrollContent: {
-    paddingHorizontal: 20,
+    paddingHorizontal: 24,
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 20,
-  },
-  greetingRow: {
-    flexDirection: 'row',
     alignItems: 'center',
+    marginBottom: 24,
   },
   greeting: {
-    fontSize: 22,
+    fontSize: isSmallDevice ? 26 : 30,
     fontWeight: '600',
     color: '#1F2937',
-  },
-  waveEmoji: {
-    fontSize: 22,
+    letterSpacing: -0.5,
   },
   subtitle: {
-    fontSize: 14,
+    fontSize: 15,
     color: '#6B7280',
     marginTop: 4,
   },
   profileButton: {
-    padding: 4,
-  },
-  profileImage: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: '#FEF3E6',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 2,
-    borderColor: '#F5E6D3',
-  },
-  routineCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 20,
-    padding: 20,
-    marginBottom: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 2,
-  },
-  routineCardContent: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  routineCardLeft: {
-    flex: 1,
-  },
-  routineCardTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#1F2937',
-    marginBottom: 6,
-  },
-  stepsRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 14,
-  },
-  stepsText: {
-    fontSize: 13,
-    color: '#6B7280',
-  },
-  sparkle: {
-    fontSize: 13,
-  },
-  beginButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#F5F0E8',
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    borderRadius: 20,
-    alignSelf: 'flex-start',
-    marginBottom: 12,
-  },
-  beginButtonText: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: '#5C5C5C',
-  },
-  progressText: {
-    fontSize: 12,
-    color: '#9CA3AF',
-  },
-  routineCardRight: {
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  productImages: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  productCircle: {
     width: 44,
     height: 44,
     borderRadius: 22,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: 'rgba(17, 24, 39, 0.08)',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  logSkinButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
+
+  // Progress Card
+  progressCard: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 2,
+    borderRadius: 20,
+    padding: 20,
+    marginBottom: 24,
+    borderWidth: 1,
+    borderColor: 'rgba(17, 24, 39, 0.08)',
   },
-  logSkinText: {
-    flex: 1,
-    fontSize: 15,
-    fontWeight: '500',
-    color: '#4B5563',
-    marginLeft: 12,
-  },
-  quickActions: {
+  progressHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 24,
-  },
-  actionItem: {
     alignItems: 'center',
-    width: '23%',
-  },
-  actionIcon: {
-    width: 56,
-    height: 56,
-    borderRadius: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 8,
-  },
-  actionTitle: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: '#1F2937',
-    marginBottom: 2,
-  },
-  actionSubtitle: {
-    fontSize: 10,
-    color: '#9CA3AF',
-    textAlign: 'center',
-    lineHeight: 13,
-  },
-  topPicksSection: {
-    marginBottom: 20,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#1F2937',
     marginBottom: 16,
   },
-  productsScroll: {
-    gap: 12,
+  progressTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
   },
-  productCard: {
-    width: 160,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    padding: 14,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 2,
-  },
-  bestSellerBadge: {
-    position: 'absolute',
-    top: 10,
-    left: 10,
-    backgroundColor: '#FEF3E2',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 8,
-    zIndex: 1,
-  },
-  bestSellerText: {
-    fontSize: 10,
-    fontWeight: '600',
-    color: '#D4A574',
-  },
-  productImagePlaceholder: {
-    width: '100%',
-    height: 100,
-    backgroundColor: '#FAF8F5',
-    borderRadius: 12,
+  sunIcon: {
+    width: 32,
+    height: 32,
+    borderRadius: 10,
+    backgroundColor: 'rgba(245, 158, 11, 0.1)',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 12,
   },
-  productBrand: {
+  progressTitle: {
+    fontSize: 17,
+    fontWeight: '600',
+    color: '#1F2937',
+  },
+  streakBadge: {
+    backgroundColor: 'rgba(17, 24, 39, 0.06)',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 12,
+  },
+  streakText: {
     fontSize: 12,
     fontWeight: '600',
     color: '#1F2937',
-    marginBottom: 2,
   },
-  productName: {
+  progressBarContainer: {
+    marginBottom: 16,
+  },
+  progressBarBg: {
+    height: 6,
+    backgroundColor: 'rgba(17, 24, 39, 0.06)',
+    borderRadius: 3,
+    marginBottom: 8,
+  },
+  progressBarFill: {
+    height: '100%',
+    backgroundColor: '#1F2937',
+    borderRadius: 3,
+  },
+  progressText: {
     fontSize: 13,
-    color: '#4B5563',
-    marginBottom: 6,
-    lineHeight: 17,
+    color: '#6B7280',
   },
-  productPrice: {
+  stepsContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginBottom: 16,
+  },
+  stepItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(17, 24, 39, 0.04)',
+    borderRadius: 20,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    gap: 6,
+  },
+  stepItemDone: {
+    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+  },
+  stepCheck: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    borderWidth: 1.5,
+    borderColor: 'rgba(17, 24, 39, 0.15)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  stepCheckDone: {
+    backgroundColor: '#10B981',
+    borderColor: '#10B981',
+  },
+  stepName: {
+    fontSize: 13,
+    color: '#6B7280',
+    fontWeight: '500',
+  },
+  stepNameDone: {
+    color: '#059669',
+  },
+  continueButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#111111',
+    borderRadius: 16,
+    paddingVertical: 14,
+    gap: 8,
+  },
+  continueButtonText: {
     fontSize: 15,
-    fontWeight: '700',
+    fontWeight: '600',
+    color: '#FFFFFF',
+  },
+
+  // Quick Actions
+  sectionTitle: {
+    fontSize: 17,
+    fontWeight: '600',
+    color: '#1F2937',
+    marginBottom: 14,
+  },
+  quickActions: {
+    flexDirection: 'row',
+    gap: 12,
+    marginBottom: 24,
+  },
+  actionCard: {
+    flex: 1,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    paddingVertical: 18,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(17, 24, 39, 0.08)',
+  },
+  actionIcon: {
+    width: 44,
+    height: 44,
+    borderRadius: 14,
+    backgroundColor: 'rgba(17, 24, 39, 0.04)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 10,
+  },
+  actionLabel: {
+    fontSize: 13,
+    fontWeight: '500',
+    color: '#1F2937',
+  },
+
+  // Tip Card
+  tipCard: {
+    flexDirection: 'row',
+    backgroundColor: 'rgba(17, 24, 39, 0.04)',
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 24,
+    gap: 14,
+  },
+  tipIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    backgroundColor: '#FFFFFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  tipContent: {
+    flex: 1,
+  },
+  tipTitle: {
+    fontSize: 14,
+    fontWeight: '600',
     color: '#1F2937',
     marginBottom: 4,
   },
-  productDescription: {
-    fontSize: 11,
+  tipText: {
+    fontSize: 13,
+    color: '#6B7280',
+    lineHeight: 19,
+  },
+
+  // Recent Scans
+  recentSection: {
+    marginBottom: 20,
+  },
+  recentHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 14,
+  },
+  seeAllText: {
+    fontSize: 14,
+    color: '#6B7280',
+    fontWeight: '500',
+  },
+  emptyScans: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    padding: 32,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(17, 24, 39, 0.08)',
+  },
+  emptyText: {
+    fontSize: 14,
     color: '#9CA3AF',
-    lineHeight: 14,
+    marginTop: 10,
+    marginBottom: 16,
+  },
+  scanButton: {
+    backgroundColor: 'rgba(17, 24, 39, 0.06)',
+    borderRadius: 20,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+  },
+  scanButtonText: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#1F2937',
   },
 });

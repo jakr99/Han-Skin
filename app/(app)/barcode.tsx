@@ -7,11 +7,11 @@ import {
   Modal,
   TextInput,
   Alert,
+  StatusBar,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
 import { fetchProductByBarcode } from '@/services/barcodeService';
 
 export default function BarcodeScreen() {
@@ -58,15 +58,18 @@ export default function BarcodeScreen() {
 
   return (
     <View style={styles.container}>
-      <LinearGradient
-        colors={['#FFF8F0', '#FFF5EB', '#FEF0E8', '#FCE8E0']}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        style={StyleSheet.absoluteFillObject}
-      />
+      <StatusBar barStyle="dark-content" />
 
-      <View style={[styles.header, { paddingTop: insets.top + 10 }]}>
+      <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => router.back()}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+        >
+          <Ionicons name="chevron-back" size={28} color="#1F2937" />
+        </TouchableOpacity>
         <Text style={styles.headerTitle}>Product Check</Text>
+        <View style={styles.headerSpacer} />
       </View>
 
       <View style={styles.content}>
@@ -76,7 +79,7 @@ export default function BarcodeScreen() {
           <View style={styles.cornerBL} />
           <View style={styles.cornerBR} />
           <View style={styles.scanInner}>
-            <Ionicons name="barcode-outline" size={80} color="#7A9E9F" />
+            <Ionicons name="barcode-outline" size={80} color="#1F2937" />
             <Text style={styles.scanText}>Position barcode here</Text>
           </View>
         </View>
@@ -86,28 +89,25 @@ export default function BarcodeScreen() {
           Scan any skincare product barcode to get{'\n'}a personalized compatibility score
         </Text>
 
-        <TouchableOpacity style={styles.scanButton} onPress={handleScanPress}>
-          <LinearGradient
-            colors={['#A8C5C6', '#7A9E9F']}
-            style={styles.scanButtonGradient}
-          >
-            <Ionicons name="camera" size={22} color="#FFFFFF" style={styles.buttonIcon} />
-            <Text style={styles.scanButtonText}>Scan Barcode</Text>
-          </LinearGradient>
+        <TouchableOpacity style={styles.scanButton} onPress={handleScanPress} activeOpacity={0.9}>
+          <Ionicons name="camera" size={22} color="#FFFFFF" style={styles.buttonIcon} />
+          <Text style={styles.scanButtonText}>Scan Barcode</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
           style={styles.manualButton}
           onPress={() => setShowManualInput(true)}
         >
-          <Ionicons name="keypad-outline" size={20} color="#7A9E9F" />
+          <Ionicons name="keypad-outline" size={20} color="#6B7280" />
           <Text style={styles.manualButtonText}>Enter barcode manually</Text>
         </TouchableOpacity>
 
         <View style={styles.infoCard}>
           <View style={styles.infoHeader}>
-            <Ionicons name="shield-checkmark" size={20} color="#7A9E9F" />
-            <Text style={styles.infoTitle}>What we check for:</Text>
+            <View style={styles.infoIconWrapper}>
+              <Ionicons name="shield-checkmark" size={18} color="#1F2937" />
+            </View>
+            <Text style={styles.infoTitle}>What we check for</Text>
           </View>
           <View style={styles.infoList}>
             <View style={styles.infoItem}>
@@ -183,20 +183,33 @@ export default function BarcodeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#FAFAF8',
   },
   header: {
-    paddingHorizontal: 20,
-    paddingBottom: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingBottom: 16,
+  },
+  backButton: {
+    width: 44,
+    height: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   headerTitle: {
-    fontSize: 28,
-    fontWeight: '700',
+    fontSize: 18,
+    fontWeight: '600',
     color: '#1F2937',
+  },
+  headerSpacer: {
+    width: 44,
   },
   content: {
     flex: 1,
     alignItems: 'center',
-    paddingHorizontal: 30,
+    paddingHorizontal: 24,
   },
   scanFrame: {
     width: 220,
@@ -211,9 +224,9 @@ const styles = StyleSheet.create({
     left: 0,
     width: 30,
     height: 30,
-    borderTopWidth: 4,
-    borderLeftWidth: 4,
-    borderColor: '#7A9E9F',
+    borderTopWidth: 3,
+    borderLeftWidth: 3,
+    borderColor: '#1F2937',
     borderTopLeftRadius: 8,
   },
   cornerTR: {
@@ -222,9 +235,9 @@ const styles = StyleSheet.create({
     right: 0,
     width: 30,
     height: 30,
-    borderTopWidth: 4,
-    borderRightWidth: 4,
-    borderColor: '#7A9E9F',
+    borderTopWidth: 3,
+    borderRightWidth: 3,
+    borderColor: '#1F2937',
     borderTopRightRadius: 8,
   },
   cornerBL: {
@@ -233,9 +246,9 @@ const styles = StyleSheet.create({
     left: 0,
     width: 30,
     height: 30,
-    borderBottomWidth: 4,
-    borderLeftWidth: 4,
-    borderColor: '#7A9E9F',
+    borderBottomWidth: 3,
+    borderLeftWidth: 3,
+    borderColor: '#1F2937',
     borderBottomLeftRadius: 8,
   },
   cornerBR: {
@@ -244,9 +257,9 @@ const styles = StyleSheet.create({
     right: 0,
     width: 30,
     height: 30,
-    borderBottomWidth: 4,
-    borderRightWidth: 4,
-    borderColor: '#7A9E9F',
+    borderBottomWidth: 3,
+    borderRightWidth: 3,
+    borderColor: '#1F2937',
     borderBottomRightRadius: 8,
   },
   scanInner: {
@@ -261,7 +274,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 22,
-    fontWeight: '700',
+    fontWeight: '600',
     color: '#1F2937',
     marginBottom: 10,
   },
@@ -274,20 +287,24 @@ const styles = StyleSheet.create({
   },
   scanButton: {
     width: '100%',
-    marginBottom: 12,
-  },
-  scanButtonGradient: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: '#111111',
     paddingVertical: 16,
-    borderRadius: 28,
+    borderRadius: 18,
+    marginBottom: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.10,
+    shadowRadius: 20,
+    elevation: 4,
   },
   buttonIcon: {
     marginRight: 8,
   },
   scanButtonText: {
-    fontSize: 16,
+    fontSize: 17,
     fontWeight: '600',
     color: '#FFFFFF',
   },
@@ -300,7 +317,7 @@ const styles = StyleSheet.create({
   },
   manualButtonText: {
     fontSize: 14,
-    color: '#7A9E9F',
+    color: '#6B7280',
     fontWeight: '500',
   },
   infoCard: {
@@ -309,13 +326,21 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 18,
     borderWidth: 1,
-    borderColor: '#E5E2DE',
+    borderColor: 'rgba(17, 24, 39, 0.08)',
   },
   infoHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    gap: 12,
     marginBottom: 14,
+  },
+  infoIconWrapper: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    backgroundColor: 'rgba(17, 24, 39, 0.04)',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   infoTitle: {
     fontSize: 15,
@@ -371,10 +396,10 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   barcodeInput: {
-    backgroundColor: '#F9FAFB',
+    backgroundColor: 'rgba(17, 24, 39, 0.04)',
     borderWidth: 1,
-    borderColor: '#E5E7EB',
-    borderRadius: 12,
+    borderColor: 'rgba(17, 24, 39, 0.08)',
+    borderRadius: 14,
     padding: 16,
     fontSize: 18,
     color: '#1F2937',
@@ -383,13 +408,13 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   submitButton: {
-    backgroundColor: '#7A9E9F',
-    borderRadius: 12,
+    backgroundColor: '#111111',
+    borderRadius: 14,
     padding: 16,
     alignItems: 'center',
   },
   submitButtonDisabled: {
-    backgroundColor: '#D1D5DB',
+    backgroundColor: 'rgba(17, 24, 39, 0.2)',
   },
   submitButtonText: {
     fontSize: 16,

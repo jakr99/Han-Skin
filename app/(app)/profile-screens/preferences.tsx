@@ -9,9 +9,9 @@ const COLORS = {
   primaryText: '#1F2937',
   secondaryText: '#6B7280',
   tertiaryText: '#9CA3AF',
-  accent: '#D4A574',
-  accentLight: '#FEF3E6',
-  border: '#E8E4DF',
+  accent: '#111111',
+  accentLight: 'rgba(17, 24, 39, 0.04)',
+  border: 'rgba(17, 24, 39, 0.08)',
 };
 
 // Preference configurations that map to questionnaire data
@@ -163,7 +163,7 @@ const styles = StyleSheet.create({
   },
   optionsCard: {
     backgroundColor: COLORS.card,
-    borderRadius: 12,
+    borderRadius: 14,
     borderWidth: 1,
     borderColor: COLORS.border,
     overflow: 'hidden',
@@ -224,9 +224,14 @@ const styles = StyleSheet.create({
   saveButton: {
     backgroundColor: COLORS.accent,
     paddingVertical: 16,
-    borderRadius: 12,
+    borderRadius: 18,
     alignItems: 'center',
     marginTop: 24,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.10,
+    shadowRadius: 20,
+    elevation: 4,
   },
   saveButtonText: {
     color: '#FFFFFF',

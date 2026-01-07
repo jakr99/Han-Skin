@@ -17,7 +17,7 @@ import { supabase } from '@/lib/supabase';
 
 export default function SignUpScreen() {
   const router = useRouter();
-  const { firstName, lastName, reset } = useOnboarding();
+  const { firstName, lastName, data: onboardingData, saveToSupabase, reset } = useOnboarding();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -42,14 +42,15 @@ export default function SignUpScreen() {
         },
       },
     });
-    setLoading(false);
 
     if (error) {
+      setLoading(false);
       Alert.alert('Sign up failed', error.message);
       return;
     }
 
     if (!data.session) {
+      setLoading(false);
       reset();
       Alert.alert('Check your email', 'Confirm your email to finish signing up.');
       router.replace('/(auth)/sign-in');
@@ -68,7 +69,16 @@ export default function SignUpScreen() {
       .upsert(profilePayload);
 
     if (profileError) {
-      Alert.alert('Profile update failed', profileError.message);
+      console.error('Profile update failed', profileError.message);
+    }
+
+    // Save all onboarding skin profile data to Supabase
+    const { success, error: saveError } = await saveToSupabase();
+    setLoading(false);
+
+    if (!success) {
+      console.error('Failed to save skin profile:', saveError);
+      // Don't block the user, just log the error
     }
 
     reset();

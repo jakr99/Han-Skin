@@ -7,8 +7,8 @@ const COLORS = {
   card: '#FFFFFF',
   primaryText: '#1F2937',
   secondaryText: '#6B7280',
-  accent: '#D4A574',
-  border: '#E8E4DF',
+  accent: '#1F2937',
+  border: 'rgba(17, 24, 39, 0.08)',
   danger: '#DC2626',
 };
 
@@ -73,7 +73,7 @@ const styles = StyleSheet.create({
   },
   card: {
     backgroundColor: COLORS.card,
-    borderRadius: 12,
+    borderRadius: 14,
     padding: 16,
     borderWidth: 1,
     borderColor: COLORS.border,
@@ -94,8 +94,8 @@ const styles = StyleSheet.create({
   button: {
     paddingVertical: 12,
     alignItems: 'center',
-    borderRadius: 8,
-    backgroundColor: '#F5F3F0',
+    borderRadius: 10,
+    backgroundColor: 'rgba(17, 24, 39, 0.04)',
   },
   buttonText: {
     fontSize: 15,

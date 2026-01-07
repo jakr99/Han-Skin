@@ -9,9 +9,9 @@ const COLORS = {
   primaryText: '#1F2937',
   secondaryText: '#6B7280',
   tertiaryText: '#9CA3AF',
-  accent: '#D4A574',
-  accentLight: '#FEF3E6',
-  border: '#E8E4DF',
+  accent: '#1F2937',
+  accentLight: 'rgba(17, 24, 39, 0.04)',
+  border: 'rgba(17, 24, 39, 0.08)',
 };
 
 // These would come from the database/context in the real app
@@ -139,7 +139,7 @@ const styles = StyleSheet.create({
   },
   card: {
     backgroundColor: COLORS.card,
-    borderRadius: 12,
+    borderRadius: 14,
     borderWidth: 1,
     borderColor: COLORS.border,
     overflow: 'hidden',
@@ -158,8 +158,8 @@ const styles = StyleSheet.create({
   sectionIcon: {
     width: 36,
     height: 36,
-    borderRadius: 8,
-    backgroundColor: '#F5F3F0',
+    borderRadius: 10,
+    backgroundColor: 'rgba(17, 24, 39, 0.04)',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -194,7 +194,7 @@ const styles = StyleSheet.create({
     gap: 8,
     paddingVertical: 14,
     marginTop: 24,
-    borderRadius: 12,
+    borderRadius: 14,
     borderWidth: 1,
     borderColor: COLORS.border,
     backgroundColor: COLORS.card,

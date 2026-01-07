@@ -5,6 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { OnboardingContainer } from '@/components/layout/OnboardingContainer';
 import { Button } from '@/components/ui/Button';
+import { useOnboarding } from '@/context/OnboardingContext';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 const isSmallDevice = SCREEN_HEIGHT < 700;
@@ -21,7 +22,8 @@ const CONCERNS = [
 export default function ConcernsScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const [selectedConcerns, setSelectedConcerns] = useState<string[]>([]);
+  const { data, setConcerns } = useOnboarding();
+  const [selectedConcerns, setSelectedConcerns] = useState<string[]>(data.concerns);
 
   const toggleConcern = (concernId: string) => {
     setSelectedConcerns((prev) => {
@@ -33,6 +35,7 @@ export default function ConcernsScreen() {
   };
 
   const handleContinue = () => {
+    setConcerns(selectedConcerns);
     router.push('/(auth)/onboarding/skin-type');
   };
 

@@ -7,8 +7,8 @@ const COLORS = {
   card: '#FFFFFF',
   primaryText: '#1F2937',
   secondaryText: '#6B7280',
-  accent: '#D4A574',
-  border: '#E8E4DF',
+  accent: '#111111',
+  border: 'rgba(17, 24, 39, 0.08)',
 };
 
 export default function SubscriptionScreen() {
@@ -73,7 +73,7 @@ export default function SubscriptionScreen() {
 const styles = StyleSheet.create({
   planCard: {
     backgroundColor: COLORS.card,
-    borderRadius: 12,
+    borderRadius: 14,
     padding: 16,
     borderWidth: 1,
     borderColor: COLORS.border,
@@ -108,7 +108,7 @@ const styles = StyleSheet.create({
   },
   premiumCard: {
     backgroundColor: COLORS.card,
-    borderRadius: 12,
+    borderRadius: 14,
     padding: 16,
     borderWidth: 2,
     borderColor: COLORS.accent,
@@ -140,8 +140,13 @@ const styles = StyleSheet.create({
   upgradeButton: {
     backgroundColor: COLORS.accent,
     paddingVertical: 14,
-    borderRadius: 10,
+    borderRadius: 14,
     alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.10,
+    shadowRadius: 20,
+    elevation: 4,
   },
   upgradeButtonText: {
     color: '#FFFFFF',
@@ -158,7 +163,7 @@ const styles = StyleSheet.create({
   },
   card: {
     backgroundColor: COLORS.card,
-    borderRadius: 12,
+    borderRadius: 14,
     padding: 16,
     borderWidth: 1,
     borderColor: COLORS.border,
@@ -171,8 +176,8 @@ const styles = StyleSheet.create({
   addPaymentButton: {
     paddingVertical: 12,
     alignItems: 'center',
-    borderRadius: 8,
-    backgroundColor: '#F5F3F0',
+    borderRadius: 10,
+    backgroundColor: 'rgba(17, 24, 39, 0.04)',
   },
   addPaymentText: {
     fontSize: 15,
