@@ -7,6 +7,7 @@ import {
   StyleSheet,
   StatusBar,
   ActivityIndicator,
+  Image,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -14,6 +15,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '../../../lib/supabase';
 import { useUserProfile } from '../../../context/UserProfileContext';
 import { parseInciList } from '../../../lib/scoring/engine';
+import { getProductByBarcode } from '../../../lib/openBeautyFacts';
 
 interface Product {
   id: string;
@@ -127,44 +129,80 @@ export default function ProductDetailScreen() {
     if (!id) return;
 
     try {
-      const { data, error } = await supabase
-        .from('products')
-        .select('*')
-        .eq('id', id)
-        .single();
+      // Check if this is an Open Beauty Facts product (prefixed with obf_)
+      if (id.startsWith('obf_')) {
+        const barcode = id.replace('obf_', '');
+        const obfResult = await getProductByBarcode(barcode);
 
-      if (error) throw error;
+        if (obfResult.product) {
+          const obfProduct = obfResult.product;
+          const productData: Product = {
+            id: id,
+            brand: obfProduct.brands || 'Unknown Brand',
+            name: obfProduct.product_name || 'Unknown Product',
+            description: obfProduct.categories || null,
+            category: 'serum', // Default category
+            price: 0,
+            original_price: null,
+            image_url: obfProduct.image_front_url || obfProduct.image_url || null,
+            rating: 4.5,
+            review_count: null,
+            base_safety_score: 75,
+            raw_inci_text: obfProduct.ingredients_text_en || obfProduct.ingredients_text || null,
+            buy_url: null,
+            store: obfProduct.stores || null,
+            is_featured: false,
+          };
 
-      if (data) {
-        const productData: Product = {
-          id: data.id,
-          brand: data.brand,
-          name: data.name,
-          description: data.description,
-          category: data.category,
-          price: data.price,
-          original_price: data.original_price,
-          image_url: data.image_url,
-          rating: data.rating,
-          review_count: data.review_count,
-          base_safety_score: data.base_safety_score ?? 50,
-          raw_inci_text: data.raw_inci_text,
-          buy_url: data.buy_url,
-          store: data.store,
-          is_featured: data.is_featured,
-        };
+          setProduct(productData);
 
-        setProduct(productData);
+          if (productData.raw_inci_text) {
+            const parsed = parseInciList(productData.raw_inci_text);
+            setParsedIngredients(parsed.map(i => i.raw_name));
+          }
 
-        // Parse ingredients for display
-        if (data.raw_inci_text) {
-          const parsed = parseInciList(data.raw_inci_text);
-          setParsedIngredients(parsed.map(i => i.raw_name));
+          const match = calculateMatch(productData);
+          setSkinMatch(match);
         }
+      } else {
+        // Fetch from Supabase
+        const { data, error } = await supabase
+          .from('products')
+          .select('*')
+          .eq('id', id)
+          .single();
 
-        // Calculate skin match
-        const match = calculateMatch(productData);
-        setSkinMatch(match);
+        if (error) throw error;
+
+        if (data) {
+          const productData: Product = {
+            id: data.id,
+            brand: data.brand,
+            name: data.name,
+            description: data.description,
+            category: data.category,
+            price: data.price,
+            original_price: data.original_price,
+            image_url: data.image_url,
+            rating: data.rating,
+            review_count: data.review_count,
+            base_safety_score: data.base_safety_score ?? 50,
+            raw_inci_text: data.raw_inci_text,
+            buy_url: data.buy_url,
+            store: data.store,
+            is_featured: data.is_featured,
+          };
+
+          setProduct(productData);
+
+          if (data.raw_inci_text) {
+            const parsed = parseInciList(data.raw_inci_text);
+            setParsedIngredients(parsed.map(i => i.raw_name));
+          }
+
+          const match = calculateMatch(productData);
+          setSkinMatch(match);
+        }
       }
     } catch (error) {
       console.error('Error fetching product:', error);
@@ -238,15 +276,23 @@ export default function ProductDetailScreen() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
       >
-        {/* Product Image Placeholder */}
+        {/* Product Image */}
         <View style={styles.imageContainer}>
-          <View style={styles.imagePlaceholder}>
-            <Ionicons
-              name={getCategoryIcon(product.category) as any}
-              size={64}
-              color="#9CA3AF"
+          {product.image_url ? (
+            <Image
+              source={{ uri: product.image_url }}
+              style={styles.productImage}
+              resizeMode="contain"
             />
-          </View>
+          ) : (
+            <View style={styles.imagePlaceholder}>
+              <Ionicons
+                name={getCategoryIcon(product.category) as any}
+                size={64}
+                color="#9CA3AF"
+              />
+            </View>
+          )}
           {product.is_featured && (
             <View style={styles.featuredBadge}>
               <Text style={styles.featuredText}>Featured</Text>
@@ -438,6 +484,10 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  productImage: {
+    width: '100%',
+    height: '100%',
   },
   featuredBadge: {
     position: 'absolute',

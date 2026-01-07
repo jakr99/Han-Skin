@@ -9,11 +9,18 @@ import {
   TextInput,
   FlatList,
   ActivityIndicator,
+  Image,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '../../lib/supabase';
+import {
+  searchProducts as searchOBF,
+  POPULAR_KBEAUTY_BRANDS,
+  convertToAppProduct,
+  OpenBeautyFactsProduct,
+} from '../../lib/openBeautyFacts';
 
 // ─────────────────────────────────────────────────────────────
 // TYPES & CONSTANTS
@@ -30,6 +37,8 @@ interface Product {
   base_safety_score: number | null;
   category: string;
   is_featured: boolean;
+  image_url: string | null;
+  source: 'supabase' | 'obf'; // Track where product came from
 }
 
 const CATEGORIES = [
@@ -83,6 +92,7 @@ function ProductCard({ product, onPress }: { product: Product; onPress: () => vo
   const scoreColor = getScoreColor(score);
   const scoreLabel = getScoreLabel(score);
   const hasSale = product.original_price && product.original_price > product.price;
+  const [imageError, setImageError] = useState(false);
 
   return (
     <TouchableOpacity style={styles.productCard} onPress={onPress}>
@@ -100,7 +110,16 @@ function ProductCard({ product, onPress }: { product: Product; onPress: () => vo
 
       {/* Product Image */}
       <View style={[styles.productImage, { backgroundColor: categoryStyle.bg }]}>
-        <Ionicons name={categoryStyle.icon as any} size={36} color={categoryStyle.color} />
+        {product.image_url && !imageError ? (
+          <Image
+            source={{ uri: product.image_url }}
+            style={styles.productImageActual}
+            resizeMode="contain"
+            onError={() => setImageError(true)}
+          />
+        ) : (
+          <Ionicons name={categoryStyle.icon as any} size={36} color={categoryStyle.color} />
+        )}
       </View>
 
       {/* Product Info */}
@@ -154,7 +173,7 @@ export default function ShopScreen() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Fetch products from Supabase
+  // Fetch products from both Supabase and Open Beauty Facts
   useEffect(() => {
     fetchProducts();
   }, [activeCategory, searchQuery]);
@@ -162,28 +181,69 @@ export default function ShopScreen() {
   const fetchProducts = async () => {
     setLoading(true);
     try {
-      let query = supabase
+      // Fetch from Supabase
+      let supabaseQuery = supabase
         .from('products')
-        .select('id, brand, name, price, original_price, rating, review_count, base_safety_score, category, is_featured')
+        .select('id, brand, name, price, original_price, rating, review_count, base_safety_score, category, is_featured, image_url')
         .order('review_count', { ascending: false });
 
-      // Filter by category
       if (activeCategory !== 'all') {
-        query = query.eq('category', activeCategory);
+        supabaseQuery = supabaseQuery.eq('category', activeCategory);
       }
 
-      // Filter by search query
       if (searchQuery.trim()) {
-        query = query.or(`name.ilike.%${searchQuery}%,brand.ilike.%${searchQuery}%`);
+        supabaseQuery = supabaseQuery.or(`name.ilike.%${searchQuery}%,brand.ilike.%${searchQuery}%`);
       }
 
-      const { data, error } = await query.limit(50);
+      const { data: supabaseData, error: supabaseError } = await supabaseQuery.limit(20);
 
-      if (error) {
-        console.error('Error fetching products:', error);
-      } else {
-        setProducts(data || []);
+      if (supabaseError) {
+        console.error('Supabase error:', supabaseError);
       }
+
+      // Convert Supabase products
+      const supabaseProducts: Product[] = (supabaseData || []).map(p => ({
+        ...p,
+        source: 'supabase' as const,
+      }));
+
+      // Fetch from Open Beauty Facts for more products with images
+      let obfProducts: Product[] = [];
+      try {
+        // Search for K-beauty products or use search query
+        const searchTerm = searchQuery.trim() || POPULAR_KBEAUTY_BRANDS[Math.floor(Math.random() * 5)];
+        const obfResult = await searchOBF(searchTerm, 1, 30);
+
+        obfProducts = obfResult.products
+          .filter((p: OpenBeautyFactsProduct) => p.image_front_url || p.image_url) // Only products with images
+          .map((p: OpenBeautyFactsProduct) => {
+            const converted = convertToAppProduct(p);
+            return {
+              id: `obf_${converted.id}`,
+              brand: converted.brand,
+              name: converted.name,
+              price: 0, // OBF doesn't have price data
+              original_price: null,
+              rating: 4.0 + Math.random(), // Placeholder rating
+              review_count: Math.floor(Math.random() * 1000),
+              base_safety_score: 70 + Math.floor(Math.random() * 25), // Placeholder score
+              category: converted.category || 'serum',
+              is_featured: false,
+              image_url: converted.image_url,
+              source: 'obf' as const,
+            };
+          });
+
+        // Filter by category if needed
+        if (activeCategory !== 'all') {
+          obfProducts = obfProducts.filter(p => p.category === activeCategory);
+        }
+      } catch (obfError) {
+        console.error('Open Beauty Facts error:', obfError);
+      }
+
+      // Combine products - Supabase first, then OBF
+      setProducts([...supabaseProducts, ...obfProducts]);
     } catch (err) {
       console.error('Error:', err);
     } finally {
@@ -454,6 +514,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 12,
+    overflow: 'hidden',
+  },
+  productImageActual: {
+    width: '100%',
+    height: '100%',
   },
   productInfo: {
     flex: 1,
