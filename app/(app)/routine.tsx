@@ -67,13 +67,7 @@ export default function RoutineScreen() {
 
       {/* Header */}
       <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => router.back()}
-          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-        >
-          <Ionicons name="chevron-back" size={28} color="#1F2937" />
-        </TouchableOpacity>
+        <View style={styles.headerSpacer} />
         <Text style={styles.headerTitle}>My Routine</Text>
         <TouchableOpacity style={styles.editButton}>
           <Ionicons name="pencil-outline" size={22} color="#1F2937" />
@@ -216,6 +210,9 @@ const styles = StyleSheet.create({
     height: 44,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  headerSpacer: {
+    width: 44,
   },
   tabContainer: {
     flexDirection: 'row',

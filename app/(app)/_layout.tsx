@@ -106,7 +106,7 @@ export default function AppLayout() {
         }}
       />
       <Tabs.Screen
-        name="product"
+        name="search-product"
         options={{
           href: null,
         }}

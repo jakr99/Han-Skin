@@ -10,6 +10,7 @@ import type {
   ProductAnalysisResponse,
 } from '@/types/scanner';
 import { scoreProduct } from './scoringService';
+import { supabase } from '@/lib/supabase';
 
 // -----------------------------------------------------------------------------
 // API Configuration
@@ -20,10 +21,100 @@ const OPEN_BEAUTY_FACTS_API = 'https://world.openbeautyfacts.org/api/v0';
 const USER_AGENT = 'HanSkin - React Native - Version 1.0 - https://hanskin.app';
 
 // -----------------------------------------------------------------------------
+// Helper: Normalize text to Title Case for consistent display
+// -----------------------------------------------------------------------------
+function normalizeText(text: string | undefined | null): string {
+  if (!text) return '';
+  // Trim and normalize whitespace
+  const cleaned = text.trim().replace(/\s+/g, ' ');
+  // Convert to title case (capitalize first letter of each word)
+  return cleaned
+    .toLowerCase()
+    .split(' ')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+}
+
+// -----------------------------------------------------------------------------
+// Helper: Normalize brand name (handle special cases like COSRX, SK-II)
+// -----------------------------------------------------------------------------
+function normalizeBrand(brand: string | undefined | null): string {
+  if (!brand) return 'Unknown Brand';
+  const cleaned = brand.trim();
+
+  // Known brand casing (preserve original casing for these)
+  const brandMap: Record<string, string> = {
+    'cosrx': 'COSRX',
+    'sk-ii': 'SK-II',
+    'sk ii': 'SK-II',
+    'iunik': 'iUNIK',
+    'skin1004': 'SKIN1004',
+    'cerave': 'CeraVe',
+    'la roche-posay': 'La Roche-Posay',
+    'la roche posay': 'La Roche-Posay',
+    'dr. jart+': 'Dr. Jart+',
+    'dr jart': 'Dr. Jart+',
+  };
+
+  const lowerBrand = cleaned.toLowerCase();
+  if (brandMap[lowerBrand]) {
+    return brandMap[lowerBrand];
+  }
+
+  // Default: title case
+  return normalizeText(cleaned);
+}
+
+// -----------------------------------------------------------------------------
+// Fetch Product from Database (preferred - has curated images)
+// -----------------------------------------------------------------------------
+async function fetchProductFromDatabase(barcode: string): Promise<{
+  found: boolean;
+  product: ScannedProduct | null;
+  ingredientsText: string | null;
+}> {
+  try {
+    const { data, error } = await supabase
+      .from('products')
+      .select('name, brand, image_url, barcode, raw_inci_text')
+      .eq('barcode', barcode)
+      .single();
+
+    if (error || !data) {
+      return { found: false, product: null, ingredientsText: null };
+    }
+
+    return {
+      found: true,
+      product: {
+        name: data.name || 'Unknown Product',
+        brand: data.brand || 'Unknown Brand',
+        imageUrl: data.image_url || null,
+        barcode: barcode,
+      },
+      ingredientsText: data.raw_inci_text || null,
+    };
+  } catch {
+    return { found: false, product: null, ingredientsText: null };
+  }
+}
+
+// -----------------------------------------------------------------------------
 // Fetch Product from Open Beauty Facts
 // -----------------------------------------------------------------------------
 export async function fetchProductByBarcode(barcode: string): Promise<BarcodeScanResponse> {
   try {
+    // First, check our database for curated product data with better images
+    const dbResult = await fetchProductFromDatabase(barcode);
+    if (dbResult.found && dbResult.product) {
+      return {
+        found: true,
+        product: dbResult.product,
+        ingredientsText: dbResult.ingredientsText,
+      };
+    }
+
+    // Fallback to Open Beauty Facts API
     const response = await fetch(
       `${OPEN_BEAUTY_FACTS_API}/product/${barcode}.json`,
       {
@@ -52,10 +143,14 @@ export async function fetchProductByBarcode(barcode: string): Promise<BarcodeSca
 
     const product = data.product;
 
-    // Build product object
+    // Normalize the product name and brand from API (handles inconsistent casing)
+    const rawName = product.product_name || product.product_name_en || '';
+    const rawBrand = product.brands || '';
+
+    // Build product object with normalized data
     const scannedProduct: ScannedProduct = {
-      name: product.product_name || product.product_name_en || 'Unknown Product',
-      brand: product.brands || 'Unknown Brand',
+      name: rawName ? normalizeText(rawName) : 'Unknown Product',
+      brand: normalizeBrand(rawBrand),
       imageUrl: product.image_front_url || product.image_url || null,
       barcode: barcode,
     };

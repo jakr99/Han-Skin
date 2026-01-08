@@ -61,13 +61,7 @@ export default function BarcodeScreen() {
       <StatusBar barStyle="dark-content" />
 
       <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => router.back()}
-          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-        >
-          <Ionicons name="chevron-back" size={28} color="#1F2937" />
-        </TouchableOpacity>
+        <View style={styles.headerSpacer} />
         <Text style={styles.headerTitle}>Product Check</Text>
         <View style={styles.headerSpacer} />
       </View>
@@ -94,13 +88,24 @@ export default function BarcodeScreen() {
           <Text style={styles.scanButtonText}>Scan Barcode</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity
-          style={styles.manualButton}
-          onPress={() => setShowManualInput(true)}
-        >
-          <Ionicons name="keypad-outline" size={20} color="#6B7280" />
-          <Text style={styles.manualButtonText}>Enter barcode manually</Text>
-        </TouchableOpacity>
+        {/* Search Options */}
+        <View style={styles.optionsRow}>
+          <TouchableOpacity
+            style={styles.optionButton}
+            onPress={() => router.push('/(app)/search-product' as any)}
+          >
+            <Ionicons name="search-outline" size={20} color="#6B7280" />
+            <Text style={styles.optionButtonText}>Search by name</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.optionButton}
+            onPress={() => setShowManualInput(true)}
+          >
+            <Ionicons name="keypad-outline" size={20} color="#6B7280" />
+            <Text style={styles.optionButtonText}>Enter barcode</Text>
+          </TouchableOpacity>
+        </View>
 
         <View style={styles.infoCard}>
           <View style={styles.infoHeader}>
@@ -308,14 +313,25 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#FFFFFF',
   },
-  manualButton: {
+  optionsRow: {
+    flexDirection: 'row',
+    gap: 12,
+    marginBottom: 24,
+    width: '100%',
+  },
+  optionButton: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
     gap: 8,
-    paddingVertical: 12,
-    marginBottom: 24,
+    paddingVertical: 14,
+    backgroundColor: 'rgba(17, 24, 39, 0.04)',
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: 'rgba(17, 24, 39, 0.08)',
   },
-  manualButtonText: {
+  optionButtonText: {
     fontSize: 14,
     color: '#6B7280',
     fontWeight: '500',

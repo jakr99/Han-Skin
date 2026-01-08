@@ -12,10 +12,10 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { supabase } from '../../../lib/supabase';
-import { useUserProfile } from '../../../context/UserProfileContext';
-import { parseInciList } from '../../../lib/scoring/engine';
-import { getProductByBarcode } from '../../../lib/openBeautyFacts';
+import { supabase } from '../../lib/supabase';
+import { useUserProfile } from '../../context/UserProfileContext';
+import { parseInciList } from '../../lib/scoring/engine';
+import { getProductByBarcode } from '../../lib/openBeautyFacts';
 
 interface Product {
   id: string;
@@ -77,7 +77,7 @@ export default function ProductDetailScreen() {
     }
 
     // Adjust based on user's skin type and category match
-    if (profile?.skin_type) {
+    if (profile?.skinType) {
       const categoryBoosts: Record<string, string[]> = {
         dry: ['moisturizer', 'essence', 'serum'],
         oily: ['cleanser', 'toner', 'serum'],
@@ -86,10 +86,10 @@ export default function ProductDetailScreen() {
         normal: ['serum', 'moisturizer', 'sunscreen'],
       };
 
-      const boostedCategories = categoryBoosts[profile.skin_type] || [];
+      const boostedCategories = categoryBoosts[profile.skinType] || [];
       if (boostedCategories.includes(productData.category)) {
         score += 10;
-        positive.push(`Great for ${profile.skin_type} skin`);
+        positive.push(`Great for ${profile.skinType} skin`);
       }
     }
 

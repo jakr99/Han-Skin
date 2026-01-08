@@ -6,6 +6,50 @@
 
 const BASE_URL = 'https://world.openbeautyfacts.org/api/v2';
 
+// -----------------------------------------------------------------------------
+// Helper: Normalize text to Title Case for consistent display
+// -----------------------------------------------------------------------------
+function normalizeText(text: string | undefined | null): string {
+  if (!text) return '';
+  const cleaned = text.trim().replace(/\s+/g, ' ');
+  return cleaned
+    .toLowerCase()
+    .split(' ')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+}
+
+// -----------------------------------------------------------------------------
+// Helper: Normalize brand name (handle special cases like COSRX, SK-II)
+// -----------------------------------------------------------------------------
+function normalizeBrand(brand: string | undefined | null): string {
+  if (!brand) return 'Unknown Brand';
+  const cleaned = brand.trim();
+
+  const brandMap: Record<string, string> = {
+    'cosrx': 'COSRX',
+    'sk-ii': 'SK-II',
+    'sk ii': 'SK-II',
+    'iunik': 'iUNIK',
+    'skin1004': 'SKIN1004',
+    'cerave': 'CeraVe',
+    'la roche-posay': 'La Roche-Posay',
+    'la roche posay': 'La Roche-Posay',
+    'dr. jart+': 'Dr. Jart+',
+    'dr jart': 'Dr. Jart+',
+    'the ordinary': 'The Ordinary',
+    'paula\'s choice': 'Paula\'s Choice',
+    'paulas choice': 'Paula\'s Choice',
+  };
+
+  const lowerBrand = cleaned.toLowerCase();
+  if (brandMap[lowerBrand]) {
+    return brandMap[lowerBrand];
+  }
+
+  return normalizeText(cleaned);
+}
+
 export interface OpenBeautyFactsProduct {
   code: string; // Barcode
   product_name: string;
@@ -154,6 +198,7 @@ export async function getProductsByCategory(
 
 /**
  * Convert Open Beauty Facts product to our app's format
+ * Normalizes brand and product names for consistent display
  */
 export function convertToAppProduct(obfProduct: OpenBeautyFactsProduct): {
   id: string;
@@ -187,11 +232,17 @@ export function convertToAppProduct(obfProduct: OpenBeautyFactsProduct): {
     category = 'eye_cream';
   }
 
+  // Normalize brand and name for consistent display
+  const normalizedBrand = normalizeBrand(obfProduct.brands);
+  const normalizedName = obfProduct.product_name
+    ? normalizeText(obfProduct.product_name)
+    : 'Unknown Product';
+
   return {
     id: obfProduct.code,
     barcode: obfProduct.code,
-    brand: obfProduct.brands || 'Unknown Brand',
-    name: obfProduct.product_name || 'Unknown Product',
+    brand: normalizedBrand,
+    name: normalizedName,
     image_url: obfProduct.image_front_url || obfProduct.image_url || null,
     raw_inci_text: obfProduct.ingredients_text_en || obfProduct.ingredients_text || null,
     category,
