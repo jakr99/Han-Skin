@@ -68,6 +68,12 @@ const CATEGORY_ICONS: Record<string, { icon: string; bg: string; color: string }
 // HELPER FUNCTIONS
 // ─────────────────────────────────────────────────────────────
 
+// Sanitize search input to prevent PostgREST query injection
+function sanitizeSearchQuery(input: string): string {
+  // Remove PostgREST reserved characters that could be used for injection
+  return input.replace(/[,.:()]/g, '');
+}
+
 function getScoreLabel(score: number): string {
   if (score >= 90) return 'Excellent';
   if (score >= 80) return 'Great';
@@ -192,7 +198,8 @@ export default function ShopScreen() {
       }
 
       if (searchQuery.trim()) {
-        supabaseQuery = supabaseQuery.or(`name.ilike.%${searchQuery}%,brand.ilike.%${searchQuery}%`);
+        const sanitized = sanitizeSearchQuery(searchQuery);
+        supabaseQuery = supabaseQuery.or(`name.ilike.%${sanitized}%,brand.ilike.%${sanitized}%`);
       }
 
       const { data: supabaseData, error: supabaseError } = await supabaseQuery.limit(20);

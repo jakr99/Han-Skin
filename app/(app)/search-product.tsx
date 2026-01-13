@@ -29,6 +29,12 @@ function useDebounce<T>(value: T, delay: number): T {
   return debouncedValue;
 }
 
+// Sanitize search input to prevent PostgREST query injection
+function sanitizeSearchQuery(input: string): string {
+  // Remove PostgREST reserved characters that could be used for injection
+  return input.replace(/[,.:()]/g, '');
+}
+
 interface SearchResult {
   id: string;
   barcode: string;
@@ -64,11 +70,14 @@ export default function SearchProductScreen() {
     setHasSearched(true);
 
     try {
+      // Sanitize query to prevent PostgREST injection
+      const sanitized = sanitizeSearchQuery(query);
+
       // Search products in Supabase using ilike for case-insensitive partial match
       const { data, error } = await supabase
         .from('products')
         .select('id, barcode, name, brand, image_url, category')
-        .or(`name.ilike.%${query}%,brand.ilike.%${query}%`)
+        .or(`name.ilike.%${sanitized}%,brand.ilike.%${sanitized}%`)
         .limit(20);
 
       if (error) {
